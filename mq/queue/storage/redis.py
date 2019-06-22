@@ -2,7 +2,7 @@ import redis
 
 from django.conf import settings
 
-from mq.mq_queue.storage import AbstractStorageConnector
+from mq.queue.storage.abstract import AbstractStorageConnector
 
 
 class RedisStorageConnector(AbstractStorageConnector):

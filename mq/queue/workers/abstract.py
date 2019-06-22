@@ -1,5 +1,4 @@
-from mq.auth.auth import AuthManager
-from mq.messages import MessageFactory
+from mq.queue.messages import MessageFactory
 
 
 class AbstractWorker:
@@ -38,16 +37,3 @@ class AbstractWorker:
     def error(self):
         """Called in queue handler when error is raised"""
         pass
-
-
-class AuthenticatedWorker(AbstractWorker):
-    auth_manager = AuthManager()
-
-    @classmethod
-    def is_ready(cls, cid):
-        print('cookies!={}, token is not None', cls.auth_manager.get_cookies(cid) != {}, cls.auth_manager.get_token(cid) is not None)
-        return cls.auth_manager.get_cookies(cid) != {} and cls.auth_manager.get_token(cid) is not None
-
-    @classmethod
-    def is_currently_authenticating(cls, cid):
-        return cls.auth_manager.is_authenticating(cid)

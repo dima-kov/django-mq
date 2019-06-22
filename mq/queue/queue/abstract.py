@@ -1,8 +1,4 @@
-from mq.mq_queue.queue.consumer_registry import ConsumerRegistry
-
-
-class AbstractQueueConnector(object):
-    pass
+from mq.queue.queue.consumer_registry import ConsumerRegistry
 
 
 class AbstractQueue(object):

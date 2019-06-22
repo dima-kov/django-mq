@@ -1,11 +1,9 @@
 import asyncio
 
-from apps.core.helpers import AsyncLoop
-from mq.mq_queue.common import TerminatedException
-from mq.mq_queue.consumers.consumer import QueueConsumer, ChainStartQueueConsumer, \
-    AuthenticatedQueueConsumer, ChainEndQueueConsumer
-from mq.mq_queue.queue.abstract import AbstractQueue
-from mq.mq_queue.queue.queue_authentication import MonitoringAuthenticationQueue
+from mq.queue.common.loop import AsyncLoop
+from mq.queue.exceptions import TerminatedException
+from mq.queue.consumers import QueueConsumer
+from mq.queue.queue.abstract import AbstractQueue
 
 
 class BaseQueueHandler(AsyncLoop):
@@ -57,43 +55,3 @@ class BaseQueueHandler(AsyncLoop):
     @staticmethod
     def unregister_consumers(consumers):
         return [c.unregister() for c in consumers]
-
-
-class ChainStartQueueHandler(BaseQueueHandler):
-    """
-    Consumes messages from one queue and then push generated messages to next_queue
-    """
-    next_queue: AbstractQueue = None
-    consumer_class = ChainStartQueueConsumer
-
-    def new_consumer_kwargs(self):
-        kwargs = super().new_consumer_kwargs()
-        kwargs['next_queue'] = self.next_queue
-        return kwargs
-
-
-class ChainEndQueueHandler(BaseQueueHandler):
-    """
-    Consumes messages from one queue if there are any errors during processing,
-    pushes message into previous_queue
-    """
-    previous_queue: AbstractQueue = None
-    consumer_class = ChainEndQueueConsumer
-
-    def new_consumer_kwargs(self):
-        kwargs = super().new_consumer_kwargs()
-        kwargs['previous_queue'] = self.previous_queue
-        return kwargs
-
-
-class AuthenticatedQueueHandler(BaseQueueHandler):
-    """
-    Connects Authentication queue during init
-    """
-    auth_queue = MonitoringAuthenticationQueue()
-    consumer_class: type(AuthenticatedQueueConsumer) = AuthenticatedQueueConsumer
-
-    def new_consumer_kwargs(self):
-        kwargs = super().new_consumer_kwargs()
-        kwargs['auth_queue'] = self.auth_queue
-        return kwargs

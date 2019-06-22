@@ -2,7 +2,6 @@ import asyncio
 from random import randint
 
 import aiohttp
-
 from aiohttp.http_exceptions import HttpProcessingError
 
 REQUEST_ATTEMPTS = 3
@@ -105,7 +104,7 @@ class AsyncRequesterV2(object):
     async def post_json(self, url, **kwargs):
         return await self.handle(AsyncRequest('post_json', url, **kwargs))
 
-    async def handle(self, request):
+    async def handle(self, request:AsyncRequest):
         attempt = REQUEST_ATTEMPTS
         raised_exc = None
         while attempt != 0:

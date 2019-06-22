@@ -1,4 +1,4 @@
-from mq.mq_queue.storage import AbstractStorageConnector
+from mq.queue.storage import AbstractStorageConnector
 
 
 class ConsumerRegistry(object):

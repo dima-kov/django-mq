@@ -2,8 +2,8 @@ import asyncio
 
 from django.test import TestCase
 
-from mq.mq_queue.queue.consumer_registry import ConsumerRegistry
-from mq.mq_queue.storage import RedisStorageConnector
+from mq.queue.queue.consumer_registry import ConsumerRegistry
+from mq.queue.storage import RedisStorageConnector
 
 
 def test_asyncio(func):
@@ -15,6 +15,9 @@ def test_asyncio(func):
 
 class BaseConsumerRegistryTestCase(TestCase):
     queue = 'test_queue_hello'
+    loop = None
+    connector = None
+    registry = None
 
     def setUp(self):
         self.loop = asyncio.new_event_loop()

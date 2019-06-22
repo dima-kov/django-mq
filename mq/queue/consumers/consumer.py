@@ -3,30 +3,15 @@ import logging
 import signal
 import traceback
 
-from apps.monitoring.models import Error
-from mq.mq_queue.common import NonAuthorizedException, TerminatedException
-from mq.messages import MessageDecoder, Message
-from mq.mq_queue.queue.abstract import AbstractQueue
-from mq.mq_queue.workers import registry as workers_registry
-from mq.mq_queue.workers import AbstractWorker, AuthenticatedWorker
-
-
-class RestartMessageException(Exception):
-    pass
-
-
-class UnhandledMessageTypeException(Exception):
-    pass
+from mq.models import Error
+from mq.queue.exceptions import TerminatedException, RestartMessageException, UnhandledMessageTypeException
+from mq.queue.messages import MessageDecoder, Message
+from mq.queue.queue.abstract import AbstractQueue
+from mq.queue.workers import registry as workers_registry
+from mq.queue.workers.abstract import AbstractWorker
 
 
 class BaseQueueConsumer(object):
-
-    @staticmethod
-    def get_logger(logger_name, consumer_item):
-        return logging.getLogger(logger_name.format(consumer_item=consumer_item))
-
-
-class QueueConsumer(BaseQueueConsumer):
     worker_class: type(AbstractWorker) = None
     handled_type: str = None
     ready = False
@@ -134,100 +119,10 @@ class QueueConsumer(BaseQueueConsumer):
         self.logger.info("Back to queue from worker. Messages: {}".format(worker.to_queue))
         self.queue.push_wait(worker.to_queue, start=True)
 
-
-class ChainStartQueueConsumer(QueueConsumer):
-
-    def __init__(self, next_queue: AbstractQueue, **kwargs):
-        super().__init__(**kwargs)
-        self.next_queue = next_queue
-
-    def new_message(self):
-        self.update_ready()
-        queue_active = self.queue.consumers_active()
-        next_queue_wait = self.next_queue.len_wait()
-        capacity = self.next_queue.capacity * self.next_queue.consumers_ready()
-
-        next_queue_full = queue_active + next_queue_wait >= capacity
-        return None if next_queue_full else super().new_message()
-
-    def to_queue(self, worker: AbstractWorker):
-        super().to_queue(worker)
-        self.next_queue.push_wait(worker.to_next_queue, start=True)
+    @staticmethod
+    def get_logger(logger_name, consumer_item):
+        return logging.getLogger(logger_name.format(consumer_item=consumer_item))
 
 
-class MultipleWorkersConsumerMixin(QueueConsumer):
-    """
-    Consumer that can handle several message types
-    Handled_type is a list, appropriate workers are dynamically
-    created according to message_type
-
-    You need to define `worker_class` attr explicitly to have possibility
-    to call worker's is_ready
-    """
-    handled_type: (str,) = None
-
-    def decode_message(self, raw_message):
-        message = MessageDecoder(raw_message).decoded()
-        if message.type not in self.handled_type:
-            raise UnhandledMessageTypeException()
-
-        return message
-
-    def new_worker(self, message: Message) -> AbstractWorker:
-        worker_class = workers_registry.get(message.type)
-        return worker_class(**self.new_worker_kwargs(message))
-
-
-class ChainEndQueueConsumer(QueueConsumer):
-
-    def __init__(self, previous_queue: AbstractQueue, **kwargs):
-        super().__init__(**kwargs)
-        self.previous_queue = previous_queue
-
-    def to_queue(self, worker: AbstractWorker):
-        super().to_queue(worker)
-        self.previous_queue.push_wait(worker.to_previous_queue, start=True)
-
-
-class AuthenticatedQueueConsumer(QueueConsumer):
-    """
-    If there are UnAuthorizedError during handling,
-    pushes message into auth queue
-    """
-
-    def __init__(self, auth_queue: AbstractQueue, **kwargs):
-        super().__init__(**kwargs)
-        self.auth_queue = auth_queue
-
-    def new_message(self):
-        self.update_ready()
-        if not self.ready:
-            self.authenticate()
-            return None
-
-        return super().new_message()
-
-    async def start_worker(self, worker: AuthenticatedWorker):
-        try:
-            return await super().start_worker(worker)
-        except NonAuthorizedException:
-            self.logger.info('[NonAuthorizedException] Consumer. authentication')
-            self.authenticate()
-            self.logger.info('[NonAuthorizedException] Consumer. message pushed')
-
-            raise RestartMessageException
-
-    def authenticate(self):
-        if self.worker_class.is_currently_authenticating(self.cid):
-            # Consumer is already authenticating. No need to push new message
-            return
-
-        self.new_auth_message()
-
-    def new_auth_message(self):
-        message = self.worker_class.message_factory.create_monitoring_auth_message(self.cid)
-        self.logger.info("new_auth_message {}".format(message.encode()))
-
-        self.auth_queue.push_wait(message.encode())
-        self.logger.info("new_auth_message pushed")
-        self.worker_class.auth_manager.set_authenticating(self.cid)
+class QueueConsumer(BaseQueueConsumer):
+    pass

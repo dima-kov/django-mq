@@ -1,11 +1,9 @@
-from django.conf import settings
-
-from mq.mq_queue.queue.abstract import AbstractQueue, AbstractQueueSystemFacade
-from mq.mq_queue.queue.consumer_registry import ConsumerRegistry
-from mq.mq_queue.storage import RedisStorageConnector
+from mq.queue.queue.abstract import AbstractQueue
+from mq.queue.queue.consumer_registry import ConsumerRegistry
+from mq.queue.storage import RedisStorageConnector
 
 
-class BaseRedisQueue(AbstractQueue):
+class RedisQueue(AbstractQueue):
     connector = RedisStorageConnector()
 
     def __init__(self):
@@ -80,81 +78,3 @@ class BaseRedisQueue(AbstractQueue):
             return None, []
 
         return values[0], values[1:]
-
-
-class RedisQueueSystemFacade(AbstractQueueSystemFacade):
-    user_queue_name = settings.MONITORING_USER_QUEUE_NAME
-    monitoring_captcha_queue_name = '{}_{{stage}}'.format(settings.MONITORING_CAPTCHA_QUEUE_NAME)
-    monitoring_auth_queue_name = '{}_{{stage}}'.format(settings.MONITORING_AUTHENTICATION_QUEUE_NAME)
-    monitoring_number_queue_name = '{}_{{stage}}'.format(settings.MONITORING_NUMBER_QUEUE_NAME)
-    number_meta_queue_name = '{}_{{stage}}'.format(settings.NUMBER_META_QUEUE_NAME)
-    purpose_queue_name = '{}_{{stage}}'.format(settings.PURPOSE_QUEUE_NAME)
-    connector = RedisStorageConnector()
-
-    def push_to_user_queue(self, value, *values, user_id):
-        list_name = self.user_queue_name.format(user_id=user_id)
-        return self.connector.push_list(list_name, value, *values)
-
-    def push_to_monitoring_worker(self, value, *values):
-        list_name = self.monitoring_captcha_queue_name.format(stage=settings.QUEUE_WAIT_STAGE)
-        return self.connector.push_list(list_name, value, *values)
-
-    def push_to_monitoring_number_worker(self, value, *values):
-        list_name = self.monitoring_number_queue_name.format(stage=settings.QUEUE_WAIT_STAGE)
-        return self.connector.push_list_start(list_name, value, *values)
-
-    def push_to_monitoring_auth_worker(self, value, *values):
-        list_name = self.monitoring_auth_queue_name.format(stage=settings.QUEUE_WAIT_STAGE)
-        return self.connector.push_list(list_name, value, *values)
-
-    def push_to_monitoring_worker_start(self, value, *values):
-        list_name = self.monitoring_captcha_queue_name.format(stage=settings.QUEUE_WAIT_STAGE)
-        return self.connector.push_list_start(list_name, value, *values)
-
-    def push_to_number_meta_queue(self, value, *values):
-        list_name = self.number_meta_queue_name.format(stage=settings.QUEUE_WAIT_STAGE)
-        return self.connector.push_list(list_name, value, *values)
-
-    def push_to_purpose_queue(self, value, *values):
-        list_name = self.purpose_queue_name.format(stage=settings.QUEUE_WAIT_STAGE)
-        return self.connector.push_list(list_name, value, *values)
-
-    def push_to_number_meta_queue_start(self, value, *values):
-        list_name = self.number_meta_queue_name.format(stage=settings.QUEUE_WAIT_STAGE)
-        return self.connector.push_list_start(list_name, value, *values)
-
-    def range_user_queue(self, user_id, number):
-        list_name = self.user_queue_name.format(user_id=user_id)
-        return self.connector.list_range(list_name, number - 1)
-
-    def ltrim_user_queue(self, user_id, number):
-        list_name = self.user_queue_name.format(user_id=user_id)
-        return self.connector.redis.ltrim(list_name, number, -1)
-
-    def monitoring_captcha_wait_queue_len(self):
-        list_name = self.monitoring_captcha_queue_name.format(stage=settings.QUEUE_WAIT_STAGE)
-        return self.connector.list_len(list_name)
-
-    def monitoring_captcha_processing_queue_len(self):
-        list_name = self.monitoring_captcha_queue_name.format(stage=settings.QUEUE_PROCESSING_STAGE)
-        return self.connector.list_len(list_name)
-
-    def monitoring_number_wait_queue_len(self):
-        list_name = self.monitoring_number_queue_name.format(stage=settings.QUEUE_WAIT_STAGE)
-        return self.connector.list_len(list_name)
-
-    def monitoring_number_processing_queue_len(self):
-        list_name = self.monitoring_number_queue_name.format(stage=settings.QUEUE_PROCESSING_STAGE)
-        return self.connector.list_len(list_name)
-
-    def user_wait_queue_len(self, user_id):
-        list_name = self.user_queue_name.format(user_id=user_id)
-        return self.connector.list_len(list_name)
-
-    def number_meta_wait_queue_len(self):
-        list_name = self.number_meta_queue_name.format(stage=settings.QUEUE_WAIT_STAGE)
-        return self.connector.list_len(list_name)
-
-    def number_meta_processing_queue_len(self):
-        list_name = self.number_meta_queue_name.format(stage=settings.QUEUE_PROCESSING_STAGE)
-        return self.connector.list_len(list_name)
