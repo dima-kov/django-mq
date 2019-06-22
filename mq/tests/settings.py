@@ -2,7 +2,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = '!q*gy^010u-wewsx9fhf3r!_-scvw&5=+l!f9es_rn#_q2llq1'
+SECRET_KEY = '!q*gy^010u-wewhx9fhf3r!_-scvw&5=+l!f9es_rn#_q2llq1'
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',

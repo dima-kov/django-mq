@@ -3,7 +3,7 @@ import logging
 import signal
 import traceback
 
-from mq.models import Error
+from mq.models import MqError
 from mq.queue.exceptions import TerminatedException, RestartMessageException, UnhandledMessageTypeException
 from mq.queue.messages import MessageDecoder, Message
 from mq.queue.queue.abstract import AbstractQueue
@@ -110,9 +110,10 @@ class BaseQueueConsumer(object):
 
     def error(self, e, message=None, raw_message=None):
         self.logger.error('Error during processing queue item: \n{}\n'.format(e))
-        print(e, message)
-        error = Error(queue_message=raw_message, error_message=traceback.format_exc())
-        error.parse_message(message)
+        error = MqError(
+            queue_message=raw_message, error_message=traceback.format_exc(),
+            message_type=getattr(message, 'type'),
+        )
         error.save()
 
     def to_queue(self, worker: AbstractWorker):
