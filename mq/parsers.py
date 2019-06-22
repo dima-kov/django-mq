@@ -5,8 +5,8 @@ from bs4 import BeautifulSoup, NavigableString
 from django.conf import settings
 
 from apps.monitoring.models import ParsingItem
-from mq.common.db_saver import SaverDB
-from mq.common.exceptions import NoTableInsideHtml
+from mq.mq_queue.common.db_saver import SaverDB
+from mq.mq_queue.common import NoTableInsideHtml
 
 IGNORE_FIELDS = ['Кадастровий номер земельної ділянки']
 
