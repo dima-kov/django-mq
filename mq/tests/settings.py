@@ -25,7 +25,6 @@ DATABASES = {
     }
 }
 
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -55,3 +54,6 @@ TEMPLATES = [
     },
 ]
 
+MQ_REDIS_HOST = 'localhost'
+
+MQ_REDIS_PORT = 6379
