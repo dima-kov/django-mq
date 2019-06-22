@@ -13,9 +13,9 @@ from mq.queue.workers.abstract import AbstractWorker
 
 class BaseQueueConsumer(object):
     worker_class: type(AbstractWorker) = None
-    handled_type: str = None
     ready = False
     terminated = False
+    queue: AbstractQueue = None
 
     def __init__(self, cid, queue: AbstractQueue, logger_name, **kwargs):
         self.cid = cid
@@ -23,7 +23,7 @@ class BaseQueueConsumer(object):
         self.logger = self.get_logger(logger_name, cid)
 
         if self.worker_class is None:
-            self.worker_class = workers_registry.get(self.handled_type)
+            self.worker_class = workers_registry.get(self.queue.get_handled_type())
 
         signal.signal(signal.SIGTERM, self.terminate)
 
@@ -103,7 +103,7 @@ class BaseQueueConsumer(object):
 
     def decode_message(self, raw_message) -> Message:
         message = MessageDecoder(raw_message).decoded()
-        if message.type != self.handled_type:
+        if message.type != self.queue.handled_type:
             raise UnhandledMessageTypeException()
 
         return message

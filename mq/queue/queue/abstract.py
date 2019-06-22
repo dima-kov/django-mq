@@ -10,12 +10,16 @@ class AbstractQueue(object):
     name = None
     capacity = None
     consumers: ConsumerRegistry = None
+    handled_type: str = None
 
     def __init__(self):
         list_name = '{}_{{stage}}'.format(self.name)
         self.wait_list = list_name.format(stage='wait')
         self.processing_list = list_name.format(stage='processing')
         self.wait_list_capacity = '{}_capacity'.format(self.wait_list)
+
+    def get_handled_type(self):
+        return self.handled_type
 
     def push_wait(self, values, start=False):
         raise NotImplementedError()
@@ -65,46 +69,11 @@ class AbstractQueue(object):
         raise NotImplementedError()
 
 
-class AbstractQueueSystemFacade(object):
-    user_queue_name = ''
-    monitoring_queue_name = ''
-    number_meta_queue_name = ''
+class MultipleTypesAbstractQueue(AbstractQueue):
+    handled_types: tuple = None
 
-    def push_to_user_queue(self, user_id, value, *values):
-        raise NotImplementedError()
+    def get_handled_type(self):
+        if len(self.handled_type) == 0:
+            raise ValueError('{} must specify at least one handled_type'.format(self.__class__.__name__))
 
-    def push_to_monitoring_worker(self, value, *values):
-        raise NotImplementedError()
-
-    def push_to_number_meta_queue(self, value, *values):
-        raise NotImplementedError()
-
-    def push_to_number_meta_queue_start(self, value, *values):
-        raise NotImplementedError()
-
-    def range_user_queue(self, user_id, number):
-        raise NotImplementedError()
-
-    def ltrim_user_queue(self, user_id, number):
-        raise NotImplementedError()
-
-    def monitoring_captcha_wait_queue_len(self):
-        raise NotImplementedError()
-
-    def monitoring_captcha_processing_queue_len(self):
-        raise NotImplementedError()
-
-    def monitoring_number_wait_queue_len(self):
-        raise NotImplementedError()
-
-    def monitoring_number_processing_queue_len(self):
-        raise NotImplementedError()
-
-    def user_wait_queue_len(self, user_id):
-        raise NotImplementedError()
-
-    def number_meta_wait_queue_len(self):
-        raise NotImplementedError()
-
-    def number_meta_processing_queue_len(self):
-        raise NotImplementedError()
+        return self.handled_types[0]

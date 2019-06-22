@@ -1,5 +1,6 @@
 from mq.queue.messages import MessageDecoder, Message
 from mq.queue.consumers.consumer import BaseQueueConsumer, UnhandledMessageTypeException
+from mq.queue.queue.abstract import AbstractQueue, MultipleTypesAbstractQueue
 from mq.queue.workers.abstract import AbstractWorker
 from mq.queue.workers import registry as workers_registry
 
@@ -13,11 +14,14 @@ class MultipleWorkersConsumerMixin(BaseQueueConsumer):
     You need to define `worker_class` attr explicitly to have possibility
     to call worker's is_ready
     """
-    handled_type: (str,) = None
+    queue: MultipleTypesAbstractQueue = None
+
+    def __init__(self, cid, queue: MultipleTypesAbstractQueue, logger_name, **kwargs):
+        super().__init__(cid, queue, logger_name, **kwargs)
 
     def decode_message(self, raw_message):
         message = MessageDecoder(raw_message).decoded()
-        if message.type not in self.handled_type:
+        if message.type not in self.queue.handled_types:
             raise UnhandledMessageTypeException()
 
         return message
