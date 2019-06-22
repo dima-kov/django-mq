@@ -54,6 +54,19 @@ TEMPLATES = [
     },
 ]
 
+# redis
 MQ_REDIS_HOST = 'localhost'
 
 MQ_REDIS_PORT = 6379
+
+# loggers
+
+COORDINATES_LOGGER = 'coordinates'
+
+MQ_LOGGING = {
+    'handlers': [COORDINATES_LOGGER],
+    'directory': '/Users/dima/projects/moze/logs',
+}
+
+from mq.logging import configure_logging
+configure_logging(MQ_LOGGING, MQ_LOGGING)

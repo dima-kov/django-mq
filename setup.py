@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-mq',
-    version='0.3',
+    version='0.4',
     packages=find_packages(),
     include_package_data=True,
     license='BSD License',
@@ -20,9 +20,9 @@ setup(
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
-        'Framework :: Django :: 2.0',  # replace "X.Y" as appropriate
-        'Framework :: Django :: 2.1',  # replace "X.Y" as appropriate
-        'Framework :: Django :: 2.2',  # replace "X.Y" as appropriate
+        'Framework :: Django :: 2.0',
+        'Framework :: Django :: 2.1',
+        'Framework :: Django :: 2.2',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
@@ -31,3 +31,4 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
 )
+

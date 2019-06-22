@@ -20,7 +20,7 @@ class BaseQueueConsumer(object):
     def __init__(self, cid, queue: AbstractQueue, logger_name, **kwargs):
         self.cid = cid
         self.queue = queue
-        self.logger = self.get_logger(logger_name, cid)
+        self.logger = logging.getLogger(logger_name)
 
         if self.worker_class is None:
             self.worker_class = workers_registry.get(self.queue.get_handled_type())
@@ -119,10 +119,6 @@ class BaseQueueConsumer(object):
     def to_queue(self, worker: AbstractWorker):
         self.logger.info("Back to queue from worker. Messages: {}".format(worker.to_queue))
         self.queue.push_wait(worker.to_queue, start=True)
-
-    @staticmethod
-    def get_logger(logger_name, consumer_item):
-        return logging.getLogger(logger_name.format(consumer_item=consumer_item))
 
 
 class QueueConsumer(BaseQueueConsumer):
