@@ -1,6 +1,3 @@
-from mq.queue.messages import MessageFactory
-
-
 class AbstractWorker:
     """
         :message_content
@@ -11,7 +8,6 @@ class AbstractWorker:
         Used when worker have messages to push to queue after processing all work.
         E.g.: pushing pdf link for download to queue
     """
-    message_factory = MessageFactory()
 
     def __init__(self, consumer_id: int, message_content, message_object_id, logger):
         self.cid = consumer_id
