@@ -124,6 +124,7 @@ class AsyncRequesterV2(object):
                     aiohttp.ClientConnectionError,
                     aiohttp.ClientProxyConnectionError,
                     aiohttp.ClientHttpProxyError,
+                    TimeoutError,
                     asyncio.TimeoutError,
                     ConnectionRefusedError,
                     HttpProcessingError) as exc:

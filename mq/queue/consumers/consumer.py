@@ -110,11 +110,11 @@ class BaseQueueConsumer(object):
 
     def error(self, e, message=None, raw_message=None):
         self.logger.error('Error during processing queue item: \n{}\n'.format(e))
-        error = MqError(
+        type = message.type if message else MqError.UNKNOWN
+        error = MqError.objects.create(
             queue_message=raw_message, error_message=traceback.format_exc(),
-            message_type=getattr(message, 'type'),
+            message_type=type, status=MqError.CREATED,
         )
-        error.save()
 
     def to_queue(self, worker: AbstractWorker):
         self.logger.info("Back to queue from worker. Messages: {}".format(worker.to_queue))

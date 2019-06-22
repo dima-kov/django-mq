@@ -25,15 +25,14 @@ class MqError(models.Model):
     error_message = models.TextField(
         verbose_name=_("Трейсбек помилки")
     )
-    status = models.CharField(
+    status = models.IntegerField(
         verbose_name=_("Статус"),
-        max_length=2,
         choices=ERROR_STATUS_CHOICES,
         default=CREATED,
         db_index=True,
     )
     message_type = models.CharField(
-        max_length=2,
+        max_length=50,
         default=UNKNOWN,
         db_index=True,
     )
