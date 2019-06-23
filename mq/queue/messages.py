@@ -1,5 +1,7 @@
 import json
 
+from django.utils import timezone
+
 from mq.queue.queue.abstract import AbstractQueue
 
 TYPE_NAME = "type"
@@ -23,6 +25,30 @@ class Message(object):
             TYPE_NAME: self.type,
             PUSHED_AT_NAME: self.pushed_at,
         }, default=str)
+
+
+class QueueMessagesGenerator(object):
+    type: str = None
+
+    def __init__(self, type):
+        self.type = type
+
+    def create(self, content, object_id=None, encode: bool = False):
+        message = Message(content, self.type, timezone.now(), object_id)
+        return message.encode() if encode else message
+
+    def bulk_create(self, data, encode=False):
+        """
+            Data: list of {
+                content: 1,
+                object_id: 2, #  unmandatory
+            }
+        """
+
+        def one(i):
+            return self.create(i.get(CONTENT_NAME), i.get(OBJECT_ID_NAME), encode)
+
+        return [one(i) for i in data]
 
 
 class MessageDecoder(object):
