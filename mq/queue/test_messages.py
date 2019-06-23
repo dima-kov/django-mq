@@ -29,9 +29,25 @@ class TestQueueMessagesGenerator(TestCase):
         messages_1_1 = self.generator_1.bulk_create(data)
         assert len(messages_1_1) == 3
 
-        assert messages_1_1[0].content == 1
-        assert messages_1_1[0].type == self.TYPE_1
-        assert messages_1_1[0].object_id is None
+        i = 1
+        for m in messages_1_1:
+            assert m.content == i
+            assert m.type == self.TYPE_1
+            assert m.object_id is None
+            i += 1
+
+    def test_bulk_create_content_list(self):
+        data = [1, 2, 3]
+
+        messages_1_1 = self.generator_1.bulk_create(data)
+        assert len(messages_1_1) == 3
+
+        i = 1
+        for m in messages_1_1:
+            assert m.content == i
+            assert m.type == self.TYPE_1
+            assert m.object_id is None
+            i += 1
 
     def test_bulk_create_encode(self):
         data = [
@@ -44,4 +60,4 @@ class TestQueueMessagesGenerator(TestCase):
 
         messages_1_1 = self.generator_1.bulk_create(data, encode=True)
         assert len(messages_1_1) == 3
-        assert messages_1_1[0].startswith(message_1_expected) == True
+        assert messages_1_1[0].startswith(message_1_expected) is True

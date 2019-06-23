@@ -2,8 +2,6 @@ import json
 
 from django.utils import timezone
 
-from mq.queue.queue.abstract import AbstractQueue
-
 TYPE_NAME = "type"
 CONTENT_NAME = "content"
 PUSHED_AT_NAME = "pushed_at"
@@ -39,14 +37,21 @@ class QueueMessagesGenerator(object):
 
     def bulk_create(self, data, encode=False):
         """
-            Data: list of {
+            Data can be either:
+            - list of {
                 content: 1,
                 object_id: 2, #  unmandatory
             }
+            - list of just content items
         """
-
         def one(i):
-            return self.create(i.get(CONTENT_NAME), i.get(OBJECT_ID_NAME), encode)
+            return one_dict(i) if type(i) == dict else one_content(i)
+
+        def one_dict(i):
+            return self.create(i.get(CONTENT_NAME), i.get(OBJECT_ID_NAME), encode=encode)
+
+        def one_content(i):
+            return self.create(i, encode=encode)
 
         return [one(i) for i in data]
 
@@ -68,14 +73,3 @@ class MessageDecoder(object):
             pushed_at=json_message[PUSHED_AT_NAME],
             object_id=json_message[OBJECT_ID_NAME]
         )
-
-
-class MessageTypeRegistry(object):
-    registry = {}
-
-    def register(self, message_type: str, queue: type(AbstractQueue)):
-        self.registry[message_type] = queue
-        return
-
-
-registry = MessageTypeRegistry()

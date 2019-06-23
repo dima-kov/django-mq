@@ -1,3 +1,4 @@
+from mq.queue.messages import QueueMessagesGenerator
 from mq.queue.queue.consumer_registry import ConsumerRegistry
 
 
@@ -13,10 +14,11 @@ class AbstractQueue(object):
     handled_type: str = None
 
     def __init__(self):
-        list_name = '{}_{{stage}}'.format(self.name)
+        list_name = 'queue_{}_{{stage}}'.format(self.name)
         self.wait_list = list_name.format(stage='wait')
         self.processing_list = list_name.format(stage='processing')
         self.wait_list_capacity = '{}_capacity'.format(self.wait_list)
+        self.message_gen = QueueMessagesGenerator(self.handled_type)
 
     def get_handled_type(self):
         return self.handled_type
@@ -71,6 +73,10 @@ class AbstractQueue(object):
 
 class MultipleTypesAbstractQueue(AbstractQueue):
     handled_types: tuple = None
+
+    def __init__(self):
+        super().__init__()
+        self.message_gen = None
 
     def get_handled_type(self):
         if len(self.handled_type) == 0:
