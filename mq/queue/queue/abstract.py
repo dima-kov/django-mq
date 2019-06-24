@@ -18,10 +18,14 @@ class AbstractQueue(object):
         self.wait_list = list_name.format(stage='wait')
         self.processing_list = list_name.format(stage='processing')
         self.wait_list_capacity = '{}_capacity'.format(self.wait_list)
-        self.message_gen = QueueMessagesGenerator(self.handled_type)
+        self.message_generator()
 
     def get_handled_type(self):
         return self.handled_type
+
+    def message_generator(self):
+        name = '{}_mes'.format(self.handled_type)
+        setattr(self, name, QueueMessagesGenerator(self.handled_type))
 
     def push_wait(self, values, start=False):
         raise NotImplementedError()
@@ -76,10 +80,15 @@ class MultipleTypesAbstractQueue(AbstractQueue):
 
     def __init__(self):
         super().__init__()
-        self.message_gen = None
 
     def get_handled_type(self):
         if len(self.handled_type) == 0:
             raise ValueError('{} must specify at least one handled_type'.format(self.__class__.__name__))
 
         return self.handled_types[0]
+
+    def message_generator(self):
+        for t in self.handled_types:
+            name = '{}_mes'.format(t)
+            setattr(self, name, QueueMessagesGenerator(t))
+

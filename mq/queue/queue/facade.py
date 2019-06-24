@@ -35,11 +35,5 @@ class QueueConsumersFacade(BaseQueueFacade):
         return self.queue.consumers_inactive()
 
 
-class QueueMessagesFacade(BaseQueueFacade):
-
-    def message_gen(self):
-        return self.queue.message_gen
-
-
-class QueueFacade(QueuePushFacade, QueueStatsFacade, QueueConsumersFacade, QueueMessagesFacade):
+class QueueFacade(QueuePushFacade, QueueStatsFacade, QueueConsumersFacade):
     pass
