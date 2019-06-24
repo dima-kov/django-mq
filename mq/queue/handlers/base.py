@@ -33,6 +33,8 @@ class BaseQueueHandler(AsyncLoop):
             self.unregister_consumers(consumers)
             print('Consumers unregistered')
 
+            self.run_in_loop(asyncio.ensure_future(asyncio.sleep(2)))
+
             self.loop.stop()
             print('Loop stopped')
 
