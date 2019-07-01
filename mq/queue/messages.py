@@ -8,31 +8,13 @@ PUSHED_AT_NAME = "pushed_at"
 OBJECT_ID_NAME = "object_id"
 
 
-class Message(object):
+class MessageType(object):
 
-    def __init__(self, content, type, pushed_at, object_id=None):
-        self.content = content
-        self.type = type
-        self.pushed_at = pushed_at
-        self.object_id = object_id
-
-    def encode(self):
-        return json.dumps({
-            CONTENT_NAME: self.content,
-            OBJECT_ID_NAME: self.object_id,
-            TYPE_NAME: self.type,
-            PUSHED_AT_NAME: self.pushed_at,
-        }, default=str)
-
-
-class QueueMessagesGenerator(object):
-    type: str = None
-
-    def __init__(self, type):
-        self.type = type
+    def __init__(self, name):
+        self.name = name
 
     def create(self, content, object_id=None, encode: bool = False):
-        message = Message(content, self.type, timezone.now(), object_id)
+        message = Message(content, self.name, timezone.now(), object_id)
         return message.encode() if encode else message
 
     def bulk_create(self, data, encode=False):
@@ -54,6 +36,23 @@ class QueueMessagesGenerator(object):
             return self.create(i, encode=encode)
 
         return [one(i) for i in data]
+
+
+class Message(object):
+
+    def __init__(self, content, type, pushed_at, object_id=None):
+        self.content = content
+        self.type = type
+        self.pushed_at = pushed_at
+        self.object_id = object_id
+
+    def encode(self):
+        return json.dumps({
+            CONTENT_NAME: self.content,
+            OBJECT_ID_NAME: self.object_id,
+            TYPE_NAME: self.type,
+            PUSHED_AT_NAME: self.pushed_at,
+        }, default=str)
 
 
 class MessageDecoder(object):

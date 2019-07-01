@@ -1,4 +1,3 @@
-from mq.queue.messages import QueueMessagesGenerator
 from mq.queue.queue.consumer_registry import ConsumerRegistry
 
 
@@ -11,21 +10,19 @@ class AbstractQueue(object):
     name = None
     capacity = None
     consumers: ConsumerRegistry = None
-    handled_type: str = None
+    handled_types: tuple = None
 
     def __init__(self):
         list_name = 'queue_{}_{{stage}}'.format(self.name)
         self.wait_list = list_name.format(stage='wait')
         self.processing_list = list_name.format(stage='processing')
         self.wait_list_capacity = '{}_capacity'.format(self.wait_list)
-        self.message_generator()
 
     def get_handled_type(self):
-        return self.handled_type
+        if len(self.handled_types) == 0:
+            raise ValueError('{} must specify at least one handled_type'.format(self.__class__.__name__))
 
-    def message_generator(self):
-        name = '{}_mes'.format(self.handled_type)
-        setattr(self, name, QueueMessagesGenerator(self.handled_type))
+        return self.handled_types[0]
 
     def push_wait(self, values, start=False):
         raise NotImplementedError()
@@ -73,22 +70,3 @@ class AbstractQueue(object):
 
     def consumers_inactive(self) -> int:
         raise NotImplementedError()
-
-
-class MultipleTypesAbstractQueue(AbstractQueue):
-    handled_types: tuple = None
-
-    def __init__(self):
-        super().__init__()
-
-    def get_handled_type(self):
-        if len(self.handled_type) == 0:
-            raise ValueError('{} must specify at least one handled_type'.format(self.__class__.__name__))
-
-        return self.handled_types[0]
-
-    def message_generator(self):
-        for t in self.handled_types:
-            name = '{}_mes'.format(t)
-            setattr(self, name, QueueMessagesGenerator(t))
-

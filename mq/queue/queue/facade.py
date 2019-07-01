@@ -37,3 +37,32 @@ class QueueConsumersFacade(BaseQueueFacade):
 
 class QueueFacade(QueuePushFacade, QueueStatsFacade, QueueConsumersFacade):
     pass
+
+
+class BaseQueuesFacade(object):
+    """
+    Class for creating several queues facade per django project.
+    E.g:
+    class SystemQueues(BaseQueuesFacade):
+        foo = FooQueue()
+        bar = BarQueue()
+
+    Access to every queue in the system is performed through attribute SystemQueues:
+
+    - Creating messages:
+        SystemQueues().foo.foo_type.create('test message content)
+    - pushing to queue:
+        SystemQueues().foo.push(messages)
+
+    Instance of BaseQueuesFacade can be stored as
+    """
+
+    def queue_by_type(self, message_type: str) -> AbstractQueue:
+
+        for attr in self.__dir__():
+            if attr is AbstractQueue:
+                queue = getattr(self, attr)
+                if type in queue.handled_types:
+                    return queue
+
+        raise ValueError("No queue were found for type: {}".format(message_type))
