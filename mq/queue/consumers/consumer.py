@@ -103,7 +103,7 @@ class BaseQueueConsumer(object):
 
     def decode_message(self, raw_message) -> Message:
         message = MessageDecoder(raw_message).decoded()
-        if message.type != self.queue.handled_type:
+        if message.type not in self.queue.handled_types:
             raise UnhandledMessageTypeException()
 
         return message

@@ -26,6 +26,7 @@ class MessageType(object):
             }
             - list of just content items
         """
+
         def one(i):
             return one_dict(i) if type(i) == dict else one_content(i)
 
@@ -36,6 +37,11 @@ class MessageType(object):
             return self.create(i, encode=encode)
 
         return [one(i) for i in data]
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self.name == other
+        return super().__eq__(other)
 
 
 class Message(object):

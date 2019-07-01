@@ -1,13 +1,13 @@
 from django.test import TestCase
 
-from mq.queue.messages import QueueMessagesGenerator
+from mq.queue.messages import MessageType
 
 
 class TestQueueMessagesGenerator(TestCase):
 
     def setUp(self):
         self.TYPE_1 = 'hello'
-        self.generator_1 = QueueMessagesGenerator(self.TYPE_1)
+        self.generator_1 = MessageType(self.TYPE_1)
 
     def test_create(self):
         message_1_1 = self.generator_1.create(1)
