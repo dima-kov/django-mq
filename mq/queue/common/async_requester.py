@@ -63,7 +63,7 @@ class AsyncRequestSender(object):
 class AsyncRequest(object):
     sender = AsyncRequestSender()
 
-    def __init__(self, method_name, url, data=None, cookies=None, headers=None, proxy=None, verify_ssl=False):
+    def __init__(self, method_name, url, data=None, cookies=None, headers=None, proxy=None, verify_ssl=False, **kwargs):
         self.method_name = method_name
         self.url = url
         self.data = data
@@ -71,11 +71,12 @@ class AsyncRequest(object):
         self.headers = headers
         self.proxy = proxy
         self.verify_ssl = verify_ssl
+        self.kwargs = kwargs
 
     async def do(self):
         return await self.method(
             self.url, data=self.data, cookies=self.cookies,
-            headers=self.headers, proxy=self.proxy, verify_ssl=self.verify_ssl
+            headers=self.headers, proxy=self.proxy, verify_ssl=self.verify_ssl, **self.kwargs
         )
 
     @property
@@ -104,7 +105,7 @@ class AsyncRequesterV2(object):
     async def post_json(self, url, **kwargs):
         return await self.handle(AsyncRequest('post_json', url, **kwargs))
 
-    async def handle(self, request:AsyncRequest):
+    async def handle(self, request: AsyncRequest):
         attempt = REQUEST_ATTEMPTS
         raised_exc = None
         while attempt != 0:
