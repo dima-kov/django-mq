@@ -93,7 +93,8 @@ class BaseQueueConsumer(object):
         await worker.process()
 
     def new_worker(self, message: Message) -> AbstractWorker:
-        return self.worker_class(**self.new_worker_kwargs(message))
+        worker_class = workers_registry.get(message.type)
+        return worker_class(**self.new_worker_kwargs(message))
 
     def new_worker_kwargs(self, message: Message) -> {}:
         return {
