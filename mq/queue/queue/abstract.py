@@ -18,9 +18,9 @@ class AbstractQueue(object):
         self.processing_list = list_name.format(stage='processing')
         self.wait_list_capacity = '{}_capacity'.format(self.wait_list)
 
-    def get_handled_type(self):
+    def get_main_handled_type(self):
         if len(self.handled_types) == 0:
-            raise ValueError('{} must specify at least one handled_type'.format(self.__class__.__name__))
+            raise ValueError('{} must define at least one handled_type'.format(self.__class__.__name__))
 
         return self.handled_types[0]
 

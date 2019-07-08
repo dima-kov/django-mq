@@ -4,6 +4,7 @@ import signal
 import traceback
 
 from mq.models import MqError
+from mq.queue.consumers.ready_checker import ReadyChecker
 from mq.queue.exceptions import TerminatedException, RestartMessageException, UnhandledMessageTypeException
 from mq.queue.messages import MessageDecoder, Message
 from mq.queue.queue.abstract import AbstractQueue
@@ -12,18 +13,16 @@ from mq.queue.workers.abstract import AbstractWorker
 
 
 class BaseQueueConsumer(object):
-    worker_class: type(AbstractWorker) = None
     ready = False
     terminated = False
     queue: AbstractQueue = None
+    ready_checker_class = ReadyChecker
 
     def __init__(self, cid, queue: AbstractQueue, logger_name, **kwargs):
         self.cid = cid
         self.queue = queue
         self.logger = logging.getLogger(logger_name)
-
-        if self.worker_class is None:
-            self.worker_class = workers_registry.get(self.queue.get_handled_type())
+        self.ready_checker = self.ready_checker_class(self.queue)
 
         signal.signal(signal.SIGTERM, self.terminate)
 
@@ -60,16 +59,12 @@ class BaseQueueConsumer(object):
             self.queue.consumer_active(self.cid)
             await self.consume_message(message)
 
-    def update_ready(self):
-        self.ready = self.worker_class.is_ready(self.cid)
-        self.queue.consumer_ready(self.cid, self.ready)
-
     def new_message(self):
-        self.update_ready()
+        self.ready = self.ready_checker.is_ready(self.cid)
         if self.ready:
             return self.queue.pop_wait_push_processing()
 
-        return self.worker_class.is_ready_message(self.cid)
+        return self.ready_checker.is_ready_message(self.cid)
 
     async def consume_message(self, raw_message):
         self.logger.info("New message from queue {}".format(raw_message))
@@ -77,7 +72,7 @@ class BaseQueueConsumer(object):
         try:
             message = self.decode_message(raw_message)
             worker = self.new_worker(message)
-            await self.start_worker(worker)
+            await worker.process()
             self.to_queue(worker)
         except RestartMessageException:
             self.queue.push_wait(raw_message, start=True)
@@ -88,9 +83,6 @@ class BaseQueueConsumer(object):
                 worker.error()
         finally:
             self.queue.processing_delete(raw_message)
-
-    async def start_worker(self, worker: AbstractWorker):
-        await worker.process()
 
     def new_worker(self, message: Message) -> AbstractWorker:
         worker_class = workers_registry.get(message.type)
