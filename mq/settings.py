@@ -9,4 +9,3 @@ MQ_LOGGING_HANDLERS = getattr(settings, 'MQ_LOGGING_HANDLERS', None)
 MQ_LOGS_DIRECTORY = getattr(settings, 'MQ_LOGS_DIRECTORY', None)
 
 MQ_LOGGING = getattr(settings, 'MQ_LOGGING', {})
-
