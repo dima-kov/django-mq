@@ -29,7 +29,7 @@ class AbstractWorker:
     @classmethod
     def is_ready_message(cls, cid):
         """Useful when consumer need to handle some message to become ready"""
-        return None
+        return False
 
     def error(self):
         """Called in queue handler when error is raised"""

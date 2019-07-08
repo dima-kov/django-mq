@@ -1,4 +1,3 @@
-from mq.queue.messages import MessageType
 from mq.queue.queue.abstract import AbstractQueue
 from mq.queue.workers import registry
 
