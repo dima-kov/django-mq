@@ -1,36 +1,47 @@
 import os
 
+FORMATTER_NAME = 'mq-logger'
 
-def configure_logging(LOGGING, MQ_LOGGING):
+FORMATTERS = {
+    FORMATTER_NAME: {
+        'format': '{asctime}: {name} {message}',
+        'style': '{',
+    }
+}
+
+
+def configure_logging(LOGGING: dict, MQ_LOGGING_LOGGERS: list, MQ_LOGGING_DIRECTORY: str):
     LOGGING['version'] = 1
     LOGGING['disable_existing_loggers'] = False
-    LOGGING['formatters'] = {
-        'mq-logger': {
-            'format': '{asctime}: {name} {message}',
-            'style': '{',
-        }}
+    LOGGING['formatters'].update(FORMATTERS)
     LOGGING['handlers'] = {}
     LOGGING['loggers'] = {}
 
-    directory = MQ_LOGGING['directory']
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    if not os.path.exists(MQ_LOGGING_DIRECTORY):
+        os.makedirs(MQ_LOGGING_DIRECTORY)
 
-    handlers = MQ_LOGGING['handlers']
+    for name in MQ_LOGGING_LOGGERS:
+        handler, logger = handler_and_logger(name, MQ_LOGGING_DIRECTORY)
+        LOGGING['handlers'].update(handler)
+        LOGGING['loggers'].update(logger)
 
-    if handlers:
-        for handler in handlers:
-            logger = handler
-            logger_handler = '{}_handler'.format(logger)
-            filename = os.path.join(directory, '{}.log'.format(logger))
 
-            LOGGING['handlers'][logger_handler] = {
-                'level': 'DEBUG',
-                'class': 'logging.FileHandler',
-                'filename': filename,
-                'formatter': 'mq-logger',
-            }
-            LOGGING['loggers'][logger] = {
-                'handlers': [logger_handler],
-                'level': 'DEBUG',
-            }
+def handler_and_logger(name, logging_directory):
+    handler = '{}_handler'.format(name)
+    filename = os.path.join(logging_directory, '{}.log'.format(name))
+
+    handlers = {
+        handler: {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': filename,
+            'formatter': FORMATTER_NAME,
+        }
+    }
+    loggers = {
+        name: {
+            'handlers': [handler],
+            'level': 'DEBUG',
+        }
+    }
+    return handlers, loggers
