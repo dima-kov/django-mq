@@ -21,7 +21,10 @@ class AbstractStorageConnector:
     def push_list_start(self, key, value, *values):
         raise NotImplementedError
 
-    def list_range(self, key, number):
+    def rpoplpush(self, src, dst):
+        raise NotImplementedError
+
+    def list_range(self, key, number=-1):
         raise NotImplementedError
 
     def delete_key(self, key):

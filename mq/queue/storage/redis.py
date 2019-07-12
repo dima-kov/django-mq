@@ -40,6 +40,9 @@ class RedisStorageConnector(AbstractStorageConnector):
     def push_list_start(self, key, value, *values):
         return self.redis.rpush(key, value, *values)
 
+    def rpoplpush(self, src, dst):
+        return self.redis.rpoplpush(src, dst)
+
     def list_range(self, key, number=-1):
         return self.redis.lrange(key, 0, number)
 
