@@ -34,11 +34,11 @@ class RedisStorageConnector(AbstractStorageConnector):
     def decr(self, key):
         return self.redis.decr(key)
 
-    def push_list(self, key, value, *values):
-        return self.redis.lpush(key, value, *values)
+    def push_list(self, key, *values):
+        return self.redis.lpush(key, *values)
 
-    def push_list_start(self, key, value, *values):
-        return self.redis.rpush(key, value, *values)
+    def push_list_start(self, key, *values):
+        return self.redis.rpush(key, *values)
 
     def rpoplpush(self, src, dst):
         return self.redis.rpoplpush(src, dst)
@@ -69,6 +69,9 @@ class RedisStorageConnector(AbstractStorageConnector):
 
     def bitop_not(self, dest, key):
         return self.redis.bitop('not', dest, key)
+
+    def ltrim(self, name, number):
+        raise self.redis.ltrim(name, 0, number)
 
     @staticmethod
     def as_int(v):

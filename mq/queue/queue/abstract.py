@@ -1,5 +1,11 @@
+import math
+
+from django.contrib.auth import get_user_model
+
 from mq.queue.queue.consumer_registry import ConsumerRegistry
 from mq.queue.storage import AbstractStorageConnector
+
+User = get_user_model()
 
 
 class AbstractQueue(object):
@@ -71,6 +77,71 @@ class AbstractQueue(object):
     def consumers_inactive(self) -> int:
         raise NotImplementedError()
 
+    @staticmethod
+    def unpack_values(values):
+        if not isinstance(values, list):
+            values = [values]
+
+        if not values:
+            return []
+
+        return values
+
+
+class PerUserQueueMixin(AbstractQueue):
+    """
+    Mixin for gathering messages to queue by previous distribution per users' queues.
+
+    :gathering_size - amount of messages to push to queue per one gathering
+    @push_per_user - method to push values to user's queue
+    """
+    connector: AbstractStorageConnector = None
+    gathering_size: int = 10
+
+    def __init__(self):
+        super().__init__()
+        self.user_list = 'queue_{queue_name}_user_{{user_id}}'.format(queue_name=self.name)
+
+    def push_per_user(self, values, user_id, start=False):
+        values = self.unpack_values(values)
+        method = self.connector.push_list_start if start else self.connector.push_list
+        return method(self.user_list_name(user_id), *values)
+
+    def user_list_name(self, user_id):
+        return self.user_list.format(user_id=user_id)
+
+    def gather(self):
+        users_id = User.objects.all().values_list('id', flat=True)
+        per_user, sum_len = self.gather_per_user(users_id)
+
+        for user_id, user_queue_len in per_user.items():
+            print('user={} queue={}'.format(user_id, user_queue_len))
+            load_percent = math.ceil(user_queue_len / sum_len * 100)
+            chunk = self.get_gathering_chunk(load_percent)
+            self.push_from_user(user_id, chunk)
+
+    def gather_per_user(self, user_ids):
+        per_user, sum = {}, 0
+        for user_id in user_ids:
+            user_len = self.get_user_queue_len(user_id)
+            if user_len > 0:
+                per_user[user_id] = user_len
+                sum += user_len
+        return per_user, sum
+
+    def get_user_queue_len(self, user_id):
+        return self.connector.list_len(self.user_list.format(user_id=user_id))
+
+    def get_gathering_chunk(self, load_percent):
+        chunk = math.ceil(load_percent / 100 * self.gathering_size)
+        return chunk if chunk > 1 else 5
+
+    def push_from_user(self, user_id, number):
+        list_name = self.user_list_name(user_id)
+        messages = self.connector.list_range(list_name, number)
+        self.push_wait(messages)
+        self.connector.ltrim(list_name, number)
+
 
 class Queue(AbstractQueue):
     connector: AbstractStorageConnector = None
@@ -82,12 +153,9 @@ class Queue(AbstractQueue):
         self.consumers = ConsumerRegistry(self.name, self.connector)
 
     def push_wait(self, values, start=False):
-        value, values = self.unpack_values(values)
-        if not value:
-            return
-
+        values = self.unpack_values(values)
         method = self.connector.push_list_start if start else self.connector.push_list
-        return method(self.wait, value, *values)
+        return method(self.wait, *values)
 
     def pop_wait_push_processing(self):
         result = self.connector.rpoplpush(self.wait, self.processing)
@@ -137,13 +205,3 @@ class Queue(AbstractQueue):
 
     def del_processing(self):
         return self.connector.delete_key(self.processing)
-
-    @staticmethod
-    def unpack_values(values):
-        if not isinstance(values, list):
-            values = [values]
-
-        if len(values) == 0:
-            return None, []
-
-        return values[0], values[1:]

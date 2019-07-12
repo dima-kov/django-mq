@@ -15,10 +15,10 @@ class AbstractStorageConnector:
     def set(self, key, value):
         raise NotImplementedError
 
-    def push_list(self, key, value, *values):
+    def push_list(self, key, *values):
         raise NotImplementedError
 
-    def push_list_start(self, key, value, *values):
+    def push_list_start(self, key, *values):
         raise NotImplementedError
 
     def rpoplpush(self, src, dst):
@@ -52,4 +52,7 @@ class AbstractStorageConnector:
         raise NotImplementedError
 
     def bitop_not(self, dest, key):
+        raise NotImplementedError
+
+    def ltrim(self, dest, key):
         raise NotImplementedError
