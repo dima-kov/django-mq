@@ -13,11 +13,11 @@ class MessageType(object):
     def __init__(self, name):
         self.name = name
 
-    def create(self, content, object_id=None, encode: bool = False):
+    def create(self, content, object_id=None, encode: bool = True):
         message = Message(content, self.name, timezone.now(), object_id)
         return message.encode() if encode else message
 
-    def bulk_create(self, data, encode=False):
+    def bulk_create(self, data, encode=True):
         """
             Data can be either:
             - list of {
