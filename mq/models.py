@@ -2,6 +2,21 @@ from django.db import models
 from django.utils.translation import gettext as _
 
 
+class MqMessageType(models.Model):
+    name = models.CharField(
+        verbose_name=_('Name'),
+        max_length=255,
+        help_text=_('Name of message type')
+    )
+
+    class Meta:
+        verbose_name = _('Message Type')
+        verbose_name_plural = _('Message Types')
+
+    def __str__(self):
+        return self.name
+
+
 class MqError(models.Model):
     CREATED = 1
     REVIEWED = 2
@@ -31,10 +46,11 @@ class MqError(models.Model):
         default=CREATED,
         db_index=True,
     )
-    message_type = models.CharField(
-        max_length=50,
-        default=UNKNOWN,
-        db_index=True,
+    message_type = models.ForeignKey(
+        'mq.MqMessageType',
+        on_delete=models.CASCADE,
+        related_name='mq_errors',
+        verbose_name=_('Message Type')
     )
 
     class Meta:

@@ -61,12 +61,14 @@ MQ_REDIS_PORT = 6379
 
 # loggers
 
+LOGGING = {}
+
 COORDINATES_LOGGER = 'coordinates'
 
-MQ_LOGGING = {
-    'handlers': [COORDINATES_LOGGER],
-    'directory': '/Users/dima/projects/moze/logs',
-}
+MQ_LOGGING_LOGGERS = [COORDINATES_LOGGER]
+
+MQ_LOGGING_DIRECTORY = '/Users/dima/projects/moze/logs'
 
 from mq.logging import configure_logging
-configure_logging(MQ_LOGGING, MQ_LOGGING)
+
+configure_logging(LOGGING, MQ_LOGGING_LOGGERS, MQ_LOGGING_DIRECTORY)
