@@ -2,6 +2,8 @@ import json
 
 from django.utils import timezone
 
+from mq.models import MqMessageType
+
 TYPE_NAME = "type"
 CONTENT_NAME = "content"
 PUSHED_AT_NAME = "pushed_at"
@@ -12,6 +14,7 @@ class MessageType(object):
 
     def __init__(self, name):
         self.name = name
+        self.object = MqMessageType.objects.get_or_create(name=name)
 
     def create(self, content, object_id=None, encode: bool = True):
         message = Message(content, self.name, timezone.now(), object_id)
