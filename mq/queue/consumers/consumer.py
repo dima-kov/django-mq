@@ -6,7 +6,8 @@ import traceback
 from mq.models import MqError
 from mq.queue.consumers.ready_checker import ReadyChecker
 from mq.queue.exceptions import TerminatedException, RestartMessageException, UnhandledMessageTypeException
-from mq.queue.messages import MessageDecoder, Message
+from mq.queue.messages import Message
+from mq.queue.messages.messages import MessageDecoder
 from mq.queue.queue.abstract import AbstractQueue
 from mq.queue.workers import registry as workers_registry
 from mq.queue.workers.abstract import AbstractWorker
@@ -90,8 +91,10 @@ class BaseQueueConsumer(object):
 
     def new_worker_kwargs(self, message: Message) -> {}:
         return {
-            'consumer_id': self.cid, 'message_content': message.content,
-            'message_object_id': message.object_id, 'logger': self.logger
+            'consumer_id': self.cid,
+            'message_content': message.content,
+            'message_object_id': message.object_id,
+            'logger': self.logger
         }
 
     def decode_message(self, raw_message) -> Message:
