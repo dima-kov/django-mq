@@ -8,7 +8,7 @@ class MessageType(object):
 
     def __init__(self, name):
         self.name = name
-        self.object = MqMessageType.objects.get_or_create(name=name)
+        self.object, _ = MqMessageType.objects.get_or_create(name=name)
 
     def create(self, content, object_id=None, encode: bool = True):
         """Create a message of this type"""

@@ -77,6 +77,9 @@ class AbstractQueue(object):
     def consumers_inactive(self) -> int:
         raise NotImplementedError()
 
+    def cleanup(self):
+        raise NotImplementedError()
+
     @staticmethod
     def unpack_values(values):
         if not isinstance(values, list):
@@ -199,6 +202,12 @@ class Queue(AbstractQueue):
 
     def consumers_inactive(self) -> int:
         return self.consumers.count_inactive()
+
+    def cleanup(self):
+        self.connector.delete_key(self.wait)
+        self.connector.delete_key(self.processing)
+        self.connector.delete_key(self.wait_capacity)
+        self.consumers.cleanup()
 
     def get_processing(self):
         return [i.decode('utf-8') for i in self.connector.list_range(self.processing)]
