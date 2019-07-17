@@ -1,5 +1,5 @@
 from mq.models import MqError
-from mq.queue.messages import error_types_registry
+from mq.queue.messages import error_type_registry
 
 
 class ErrorsResolver:
@@ -17,22 +17,22 @@ class ErrorsResolver:
 
     def resolve_message_type(self, message_type):
         errors_qs = self.qs.filter(message_type=message_type)
-        queue_class = error_types_registry.get(message_type.name)
+        queue_class = error_type_registry.get(message_type.name)
         if not queue_class:
-            self.result.ignored(message_type.name, self._update_errors_qs(errors_qs))
+            self.result.ignored(message_type.name, self._reviewed_errors_qs(errors_qs))
             return
 
         queue = queue_class()
         messages = errors_qs.values_list('queue_message', flat=True)
         queue.push_wait(values=list(messages))
-        self.result.succeed(message_type.name, self._update_errors_qs(errors_qs))
+        self.result.succeed(message_type.name, self._reviewed_errors_qs(errors_qs))
 
     def get_unique_message_types(self):
         qs = self.qs.distinct('message_type')
         return [i.message_type for i in qs]
 
     @staticmethod
-    def _update_errors_qs(qs):
+    def _reviewed_errors_qs(qs):
         return qs.update(status=MqError.REVIEWED)
 
 

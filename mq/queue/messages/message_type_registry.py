@@ -2,7 +2,7 @@ from mq.queue.messages import MessageType
 from mq.queue.queue.abstract import AbstractQueue
 
 
-class MessageTypeRegistry(object):
+class ErrorTypeRegistry(object):
 
     def __init__(self):
         self.registry = {}
@@ -18,4 +18,4 @@ class MessageTypeRegistry(object):
         return None
 
 
-error_types_registry = MessageTypeRegistry()
+error_type_registry = ErrorTypeRegistry()
