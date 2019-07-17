@@ -9,4 +9,11 @@ class MqErrorAdmin(admin.ModelAdmin):
 
 
 admin.site.register(MqError, MqErrorAdmin)
-admin.site.register(MqMessageType)
+
+
+class MqMessageTypeAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+
+admin.site.register(MqMessageType, MqMessageTypeAdmin)
