@@ -13,7 +13,10 @@ FORMATTERS = {
 def configure_logging(LOGGING: dict, MQ_LOGGING_LOGGERS: list, MQ_LOGGING_DIRECTORY: str):
     LOGGING['version'] = 1
     LOGGING['disable_existing_loggers'] = False
-    LOGGING['formatters'].update(FORMATTERS)
+    formatters = LOGGING.get('formatters', {})
+    formatters.update(FORMATTERS)
+    LOGGING['formatters'] = formatters
+
     LOGGING['handlers'] = {}
     LOGGING['loggers'] = {}
 
