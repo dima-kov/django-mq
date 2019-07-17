@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from mq.models import MqError
 from mq.queue.errors.resolver import ErrorsResolver
-from mq.queue.messages import MessageType, message_type_registry
+from mq.queue.messages import MessageType, error_types_registry
 from mq.queue.queue.redis import RedisQueue
 
 
@@ -17,7 +17,7 @@ class ErrorsResolverTestCase(TestCase):
 
             handled_types = (type_1, type_2)
 
-        message_type_registry.register(Queue1.type_1, Queue1)
+        error_types_registry.register(Queue1.type_1, Queue1)
 
         cls.test_queue = Queue1()
 

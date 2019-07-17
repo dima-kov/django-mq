@@ -18,4 +18,4 @@ class MessageTypeRegistry(object):
         return None
 
 
-message_type_registry = MessageTypeRegistry()
+error_types_registry = MessageTypeRegistry()
