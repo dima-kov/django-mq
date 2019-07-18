@@ -82,6 +82,9 @@ class AbstractQueue(object):
 
     @staticmethod
     def unpack_values(values):
+        if not isinstance(values, list):
+            values = [values]
+
         if not values:
             return None
 
