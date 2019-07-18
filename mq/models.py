@@ -50,7 +50,8 @@ class MqError(models.Model):
         'mq.MqMessageType',
         on_delete=models.CASCADE,
         related_name='mq_errors',
-        verbose_name=_('Message Type')
+        verbose_name=_('Message Type'),
+        null=True, blank=True,
     )
 
     class Meta:
