@@ -28,7 +28,7 @@ class ErrorsResolver:
         self.result.succeed(message_type.name, self._reviewed_errors_qs(errors_qs))
 
     def get_unique_message_types(self):
-        qs = self.qs.distinct('message_type')
+        qs = self.qs.order_by().distinct('message_type')
         return [i.message_type for i in qs]
 
     @staticmethod
