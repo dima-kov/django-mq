@@ -1,3 +1,4 @@
+from django.db import ProgrammingError
 from django.utils import timezone
 
 from mq.models import MqMessageType
@@ -8,7 +9,11 @@ class MessageType(object):
 
     def __init__(self, name):
         self.name = name
-        self.object, _ = MqMessageType.objects.get_or_create(name=name)
+        try:
+            self.object, _ = MqMessageType.objects.get_or_create(name=name)
+        except ProgrammingError:
+            print('MqMessageType is migrated yet')
+            pass
 
     def create(self, content, object_id=None, encode: bool = True):
         """Create a message of this type"""
