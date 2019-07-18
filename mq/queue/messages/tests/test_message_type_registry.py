@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from mq.queue.messages import MessageType
-from mq.queue.messages.message_type_registry import ErrorTypeRegistry
+from mq.queue.messages.message_type_registry import MessageTypeRegistry
 from mq.queue.queue.abstract import AbstractQueue
 
 
@@ -19,7 +19,7 @@ class TestMessageTypeRegistry(TestCase):
         self.q = Queue1()
 
     def test_registry(self):
-        registry = ErrorTypeRegistry()
+        registry = MessageTypeRegistry()
         registry.register(Queue1.type_1, Queue1)
         registry.register(Queue1.type_2, Queue1)
         registry.register(Queue1.type_3, Queue1, handle_errors=False)

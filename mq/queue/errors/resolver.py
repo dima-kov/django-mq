@@ -1,5 +1,5 @@
 from mq.models import MqError
-from mq.queue.messages import error_type_registry
+from mq.queue.messages import message_type_registry
 
 
 class ErrorsResolver:
@@ -17,7 +17,7 @@ class ErrorsResolver:
 
     def resolve_message_type(self, message_type):
         errors_qs = self.qs.filter(message_type=message_type)
-        queue_class = error_type_registry.get_queue(message_type.name)
+        queue_class = message_type_registry.get_queue(message_type.name)
         if not queue_class:
             self.result.ignored(message_type.name, self._reviewed_errors_qs(errors_qs))
             return
