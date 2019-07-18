@@ -22,7 +22,7 @@ class TestMessageTypeRegistry(TestCase):
         registry = MessageTypeRegistry()
         registry.register(Queue1.type_1, Queue1)
         registry.register(Queue1.type_2, Queue1)
-        registry.register(Queue1.type_3, Queue1, handle_errors=False)
+        registry.register(Queue1.type_3)
 
         assert registry.get_queue(Queue1.type_1.name) == Queue1
         assert registry.get_queue(Queue1.type_2.name) == Queue1

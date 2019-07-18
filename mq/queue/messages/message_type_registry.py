@@ -8,10 +8,10 @@ class MessageTypeRegistry(object):
         self.message_type_registry = {}
         self.queue_registry = {}
 
-    def register(self, message_type: MessageType, queue: type(AbstractQueue), handle_errors=True):
+    def register(self, message_type: MessageType, queue: type(AbstractQueue) = None):
         self.message_type_registry[message_type.name] = message_type
 
-        if handle_errors:
+        if queue:
             self.queue_registry[message_type.name] = queue
 
     def get(self, search_name):
