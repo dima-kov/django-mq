@@ -158,7 +158,6 @@ class Queue(AbstractQueue):
     def push_wait(self, values, start=False):
         values = self.unpack_values(values)
         method = self.connector.push_list_start if start else self.connector.push_list
-        print(values, 'PUSHING to queue values')
         return method(self.wait, *values)
 
     def pop_wait_push_processing(self):
