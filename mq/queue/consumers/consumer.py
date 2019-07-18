@@ -107,6 +107,7 @@ class BaseQueueConsumer(object):
     def error(self, e, message=None, raw_message=None):
         self.logger.error('Error during processing queue item: \n{}\n'.format(e))
         message_type = error_type_registry.get(message.type) if message else MqError.UNKNOWN
+        message_type = message_type.object if message_type else MqError.UNKNOWN
         MqError.objects.create(
             queue_message=raw_message, error_message=traceback.format_exc(),
             message_type=message_type, status=MqError.CREATED,
