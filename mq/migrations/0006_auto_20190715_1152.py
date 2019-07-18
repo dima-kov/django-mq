@@ -6,7 +6,7 @@ import django.db.models.deletion
 
 def delete_all_errors(apps, schema_editor):
     MqError = apps.get_model("mq", "MqError")
-    MqError.objects.delete()
+    MqError.objects.all().delete()
 
 
 class Migration(migrations.Migration):
