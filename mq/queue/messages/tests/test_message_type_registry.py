@@ -8,8 +8,9 @@ from mq.queue.queue.abstract import AbstractQueue
 class Queue1(AbstractQueue):
     type_1 = MessageType('type_1')
     type_2 = MessageType('type_2')
+    type_3 = MessageType('type_3')
 
-    handled_types = (type_1, type_2)
+    handled_types = (type_1, type_2, type_3)
 
 
 class TestMessageTypeRegistry(TestCase):
@@ -21,7 +22,9 @@ class TestMessageTypeRegistry(TestCase):
         registry = ErrorTypeRegistry()
         registry.register(Queue1.type_1, Queue1)
         registry.register(Queue1.type_2, Queue1)
+        registry.register(Queue1.type_3, Queue1, handle_errors=False)
 
-        assert registry.get(Queue1.type_1.name) == Queue1
-        assert registry.get(Queue1.type_2.name) == Queue1
-        assert registry.get('random') is None
+        assert registry.get_queue(Queue1.type_1.name) == Queue1
+        assert registry.get_queue(Queue1.type_2.name) == Queue1
+        assert registry.get_queue(Queue1.type_3.name) is None
+        assert registry.get_queue('random') is None

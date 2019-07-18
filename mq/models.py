@@ -26,7 +26,7 @@ class MqError(models.Model):
         (REVIEWED, _('Reviewed')),
     )
 
-    UNKNOWN = 'unknown'
+    UNKNOWN = None
 
     queue_message = models.CharField(
         max_length=1055,

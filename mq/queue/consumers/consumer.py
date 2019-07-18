@@ -6,7 +6,7 @@ import traceback
 from mq.models import MqError
 from mq.queue.consumers.ready_checker import ReadyChecker
 from mq.queue.exceptions import TerminatedException, RestartMessageException, UnhandledMessageTypeException
-from mq.queue.messages import Message
+from mq.queue.messages import Message, error_type_registry
 from mq.queue.messages.messages import MessageDecoder
 from mq.queue.queue.abstract import AbstractQueue
 from mq.queue.workers import registry as workers_registry
@@ -106,10 +106,10 @@ class BaseQueueConsumer(object):
 
     def error(self, e, message=None, raw_message=None):
         self.logger.error('Error during processing queue item: \n{}\n'.format(e))
-        type = message.type if message else MqError.UNKNOWN
-        error = MqError.objects.create(
+        message_type = error_type_registry.get_queue(message.type) if message else MqError.UNKNOWN
+        MqError.objects.create(
             queue_message=raw_message, error_message=traceback.format_exc(),
-            message_type=type, status=MqError.CREATED,
+            message_type=message_type, status=MqError.CREATED,
         )
 
     def to_queue(self, worker: AbstractWorker):
