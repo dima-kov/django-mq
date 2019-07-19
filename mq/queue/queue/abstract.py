@@ -108,6 +108,9 @@ class PerUserQueueMixin(AbstractQueue):
     def push_per_user(self, values, user_id, start=False):
         values = self.unpack_values(values)
         method = self.connector.push_list_start if start else self.connector.push_list
+        if not values:
+            return
+
         return method(self.user_list_name(user_id), *values)
 
     def user_list_name(self, user_id):
@@ -157,6 +160,9 @@ class Queue(AbstractQueue):
 
     def push_wait(self, values, start=False):
         values = self.unpack_values(values)
+        if not values:
+            return
+
         method = self.connector.push_list_start if start else self.connector.push_list
         return method(self.wait, *values)
 
