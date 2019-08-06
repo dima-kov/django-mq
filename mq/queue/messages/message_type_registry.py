@@ -1,4 +1,4 @@
-from mq.queue.messages import MessageType
+from mq.queue.messages.message_type import MessageType
 from mq.queue.queue.abstract import AbstractQueue
 
 
