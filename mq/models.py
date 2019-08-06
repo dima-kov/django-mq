@@ -60,3 +60,25 @@ class MqError(models.Model):
 
     def __str__(self):
         return _("Error {}").format(self.raised_at)
+
+
+CREATED = 10
+IN_QUEUE = 20
+IN_PROCESS = 30
+SUCCEED = 40
+ERROR = 50
+
+MQ_STATUS_CHOICES = (
+    (CREATED, _('Створено')),
+    (IN_QUEUE, _('В черзі')),
+    (IN_PROCESS, _('В процесі')),
+    (SUCCEED, _('Оброблено')),
+    (ERROR, _('Помилка під час обробки')),
+)
+
+# To use statues, just import and concatenate with custom:
+# STATUS_CHOICES = MQ_STATUS_CHOICES + (
+#   (100, _('Custom'),
+# )
+# Integers up to 100, is reserved by mq. Do no use them
+# in case of future mq updates
