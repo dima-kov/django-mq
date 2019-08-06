@@ -27,6 +27,3 @@ class MessageTypeRegistry(object):
                 return queue
 
         return None
-
-
-message_type_registry = MessageTypeRegistry()

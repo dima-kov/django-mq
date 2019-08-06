@@ -49,3 +49,12 @@ class MessageType(object):
 
     def __str__(self):
         return self.name
+
+    @classmethod
+    def registry(cls, message_type, queue=None):
+        return message_type_registry.register(message_type, queue=queue)
+
+
+from mq.queue.messages.message_type_registry import MessageTypeRegistry
+
+message_type_registry = MessageTypeRegistry()
