@@ -99,12 +99,6 @@ class MqQueueItem(models.Model):
         null=True,
         blank=True,
     )
-    mq_status = models.CharField(
-        verbose_name=_('Статус'),
-        max_length=2,
-        choices=MQ_STATUS_CHOICES,
-        default=CREATED,
-    )
 
     class Meta:
         abstract = True
