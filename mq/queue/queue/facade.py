@@ -56,13 +56,12 @@ class BaseQueuesFacade(object):
 
     Instance of BaseQueuesFacade can be stored as
     """
+    __queues__ = ()
 
     def queue_by_type(self, message_type: str) -> AbstractQueue:
 
-        for attr in self.__dir__():
-            if attr is AbstractQueue:
-                queue = getattr(self, attr)
-                if type in queue.handled_types:
-                    return queue
+        for queue in self.__queues__:
+            if queue is AbstractQueue and message_type in queue.handled_types:
+                return queue
 
         raise ValueError("No queue were found for type: {}".format(message_type))
