@@ -54,5 +54,5 @@ class AbstractStorageConnector:
     def bitop_not(self, dest, key):
         raise NotImplementedError
 
-    def ltrim(self, dest, key):
+    def ltrim(self, dest, number):
         raise NotImplementedError

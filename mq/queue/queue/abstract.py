@@ -91,64 +91,6 @@ class AbstractQueue(object):
         return values
 
 
-class PerUserQueueMixin(AbstractQueue):
-    """
-    Mixin for gathering messages to queue by previous distribution per users' queues.
-
-    :gathering_size - amount of messages to push to queue per one gathering
-    @push_per_user - method to push values to user's queue
-    """
-    connector: AbstractStorageConnector = None
-    gathering_size: int = 10
-
-    def __init__(self):
-        super().__init__()
-        self.user_list = 'queue_{queue_name}_user_{{user_id}}'.format(queue_name=self.name)
-
-    def push_per_user(self, values, user_id, start=False):
-        values = self.unpack_values(values)
-        method = self.connector.push_list_start if start else self.connector.push_list
-        if not values:
-            return
-
-        return method(self.user_list_name(user_id), *values)
-
-    def user_list_name(self, user_id):
-        return self.user_list.format(user_id=user_id)
-
-    def gather(self):
-        users_id = User.objects.all().values_list('id', flat=True)
-        per_user, sum_len = self.gather_per_user(users_id)
-
-        for user_id, user_queue_len in per_user.items():
-            print('user={} queue={}'.format(user_id, user_queue_len))
-            load_percent = math.ceil(user_queue_len / sum_len * 100)
-            chunk = self.get_gathering_chunk(load_percent)
-            self.push_from_user(user_id, chunk)
-
-    def gather_per_user(self, user_ids):
-        per_user, sum = {}, 0
-        for user_id in user_ids:
-            user_len = self.get_user_queue_len(user_id)
-            if user_len > 0:
-                per_user[user_id] = user_len
-                sum += user_len
-        return per_user, sum
-
-    def get_user_queue_len(self, user_id):
-        return self.connector.list_len(self.user_list.format(user_id=user_id))
-
-    def get_gathering_chunk(self, load_percent):
-        chunk = math.ceil(load_percent / 100 * self.gathering_size)
-        return chunk if chunk > 1 else 5
-
-    def push_from_user(self, user_id, number):
-        list_name = self.user_list_name(user_id)
-        messages = self.connector.list_range(list_name, number)
-        self.push_wait(messages)
-        self.connector.ltrim(list_name, number)
-
-
 class Queue(AbstractQueue):
     connector: AbstractStorageConnector = None
 
@@ -220,3 +162,66 @@ class Queue(AbstractQueue):
 
     def del_processing(self):
         return self.connector.delete_key(self.processing)
+
+
+class PerUserQueueMixin(Queue):
+    """
+    Mixin for gathering messages to queue by previous distribution per users' queues.
+
+    :gathering_size - amount of messages to push to queue per one gathering
+    @push_per_user - method to push values to user's queue
+    """
+    gathering_size: int = 10
+
+    def __init__(self):
+        super().__init__()
+        self.__user_list = 'queue_{queue_name}_user_{{user_id}}'.format(queue_name=self.name)
+
+    def push_per_user(self, values, user_id, start=False):
+        values = self.unpack_values(values)
+        method = self.connector.push_list_start if start else self.connector.push_list
+        if not values:
+            return
+
+        return method(self._user_list_name(user_id), *values)
+
+    def gather(self):
+        users_id = User.objects.all().values_list('id', flat=True)
+        per_user, summed = self._count_per_user(users_id)
+
+        print('Gathering per users queue: {}'.format(self.__class__.__name__))
+        for user_id, user_queue_len in per_user.items():
+            print('user={} queue={}'.format(user_id, user_queue_len))
+            load_percent = math.ceil(user_queue_len / summed * 100)
+            chunk = self._gathering_chunk(load_percent)
+            self.push_from_user(user_id, chunk)
+
+    def len_per_user(self, user_id):
+        return self.connector.list_len(self._user_list_name(user_id))
+
+    def range_per_user(self, user_id, number=-1):
+        return self.connector.list_range(self._user_list_name(user_id), number)
+
+    def push_from_user(self, user_id, number):
+        messages = self.range_per_user(user_id, number)
+        self.push_wait(messages)
+        self._ltrim_per_user(user_id, number)
+
+    def _ltrim_per_user(self, user_id, number=-1):
+        return self.connector.ltrim(self._user_list_name(user_id), number)
+
+    def _count_per_user(self, user_ids):
+        per_user, summed = {}, 0
+        for user_id in user_ids:
+            user_len = self.len_per_user(user_id)
+            if user_len > 0:
+                per_user[user_id] = user_len
+                summed += user_len
+        return per_user, summed
+
+    def _gathering_chunk(self, load_percent):
+        chunk = math.ceil(load_percent / 100 * self.gathering_size)
+        return chunk if chunk > 1 else 5
+
+    def _user_list_name(self, user_id):
+        return self.__user_list.format(user_id=user_id)
