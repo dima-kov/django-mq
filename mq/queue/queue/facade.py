@@ -65,3 +65,7 @@ class BaseQueuesFacade(object):
                 return queue
 
         raise ValueError("No queue were found for type: {}".format(message_type))
+
+    def cleanup_queues(self):
+        for queue in self.__queues__:
+            queue.cleanup()
