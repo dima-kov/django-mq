@@ -85,7 +85,7 @@ class AbstractQueue(object):
         if not isinstance(values, list):
             values = [values]
 
-        if not values:
+        if not values or len(values) == 0:
             return None
 
         return values
