@@ -20,7 +20,8 @@ class ChainStartQueueConsumer(BaseQueueConsumer):
 
     def to_queue(self, worker: AbstractWorker):
         super().to_queue(worker)
-        self.next_queue.push_wait(worker.to_next_queue, start=True)
+        messages = chain_queue_messages(self.next_queue, worker.to_next_queue)
+        self.next_queue.push_wait(messages, start=True)
 
 
 class ChainEndQueueConsumer(BaseQueueConsumer):
@@ -31,4 +32,15 @@ class ChainEndQueueConsumer(BaseQueueConsumer):
 
     def to_queue(self, worker: AbstractWorker):
         super().to_queue(worker)
-        self.previous_queue.push_wait(worker.to_previous_queue, start=True)
+        messages = chain_queue_messages(self.previous_queue, worker.to_previous_queue)
+        self.previous_queue.push_wait(messages, start=True)
+
+
+def chain_queue_messages(queue, values: [()]):
+    # values: list of tuples of two message attr: content, object_id
+    # message type is chosen by main handled_type
+    return [
+        queue.get_main_handled_type().create(
+            content=value[0], object_id=value[1]
+        ) for value in values
+    ]
