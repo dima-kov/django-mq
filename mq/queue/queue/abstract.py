@@ -78,7 +78,7 @@ class AbstractQueue(object):
         raise NotImplementedError()
 
     def cleanup(self):
-        raise NotImplementedError()
+        pass
 
     @staticmethod
     def unpack_values(values):
@@ -152,6 +152,7 @@ class Queue(AbstractQueue):
         return self.consumers.count_inactive()
 
     def cleanup(self):
+        super().cleanup()
         self.connector.delete_key(self.wait)
         self.connector.delete_key(self.processing)
         self.connector.delete_key(self.wait_capacity)
@@ -206,6 +207,12 @@ class PerUserQueueMixin(Queue):
         messages = self.range_per_user(user_id, number)
         self.push_wait(messages)
         self._ltrim_per_user(user_id, number)
+
+    def cleanup(self):
+        super().cleanup()
+        users_id = User.objects.all().values_list('id', flat=True)
+        for user_id in users_id:
+            self.connector.delete_key(self._user_list_name(user_id))
 
     def _ltrim_per_user(self, user_id, number=-1):
         return self.connector.ltrim(self._user_list_name(user_id), number)
