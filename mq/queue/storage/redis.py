@@ -71,7 +71,7 @@ class RedisStorageConnector(AbstractStorageConnector):
         return self.redis.bitop('not', dest, key)
 
     def ltrim(self, name, number):
-        raise self.redis.ltrim(name, 0, number)
+        return self.redis.ltrim(name, 0, number)
 
     @staticmethod
     def as_int(v):
