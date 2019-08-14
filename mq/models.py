@@ -69,6 +69,7 @@ class MqQueueItem(models.Model):
     IN_PROCESS = 30
     SUCCEED = 40
     ERROR = 50
+    PAUSE = 60
 
     MQ_STATUS_CHOICES = (
         (CREATED, _('Створено')),
@@ -76,6 +77,7 @@ class MqQueueItem(models.Model):
         (IN_PROCESS, _('В процесі')),
         (SUCCEED, _('Оброблено')),
         (ERROR, _('Помилка під час обробки')),
+        (PAUSE, _('Пауза')),
     )
     # To use statues, just import and concatenate with custom:
     # STATUS_CHOICES = MQ_STATUS_CHOICES + (
