@@ -203,6 +203,9 @@ class PerUserQueueMixin(Queue):
     def range_per_user(self, user_id, number=-1):
         return self.connector.list_range(self._user_list_name(user_id), number)
 
+    def del_per_user(self, user_id, value):
+        self.connector.delete_list_value(self._user_list_name(user_id), value)
+
     def push_from_user(self, user_id, number):
         messages = self.range_per_user(user_id, number)
         self.push_wait(messages)
