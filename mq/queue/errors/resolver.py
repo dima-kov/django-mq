@@ -17,15 +17,29 @@ class ErrorsResolver:
 
     def resolve_message_type(self, message_type):
         errors_qs = self.qs.filter(message_type=message_type)
-        queue_class = message_type_registry.get_queue(message_type.name)
-        if not queue_class:
-            self.result.ignored(message_type.name, self._reviewed_errors_qs(errors_qs))
+
+        # message type is empty
+        if not message_type:
+            self.ignore(errors_qs, None)
             return
 
+        # queue not found
+        queue_class = message_type_registry.get_queue(message_type.name)
+        if not queue_class:
+            self.ignore(errors_qs, message_type.name)
+            return
+
+        # push to queue
+        self.push(errors_qs, queue_class, message_type.name)
+
+    def ignore(self, qs, type_name):
+        self.result.ignored(type_name, self._reviewed_errors_qs(qs))
+
+    def push(self, qs, queue_class, message_type_name):
         queue = queue_class()
-        messages = errors_qs.values_list('queue_message', flat=True)
+        messages = qs.values_list('queue_message', flat=True)
         queue.push_wait(values=list(messages))
-        self.result.succeed(message_type.name, self._reviewed_errors_qs(errors_qs))
+        self.result.succeed(message_type_name, self._reviewed_errors_qs(qs))
 
     def get_unique_message_types(self):
         qs = self.qs.order_by().distinct('message_type')
