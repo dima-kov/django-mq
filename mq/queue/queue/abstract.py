@@ -192,10 +192,10 @@ class PerUserQueueMixin(Queue):
 
         print('Gathering per users queue: {}'.format(self.__class__.__name__))
         for user_id, user_queue_len in per_user.items():
-            print('user={} queue={}'.format(user_id, user_queue_len))
             load_percent = math.ceil(user_queue_len / summed * 100)
             chunk = self._gathering_chunk(load_percent)
             self.push_from_user(user_id, chunk)
+            print('user (id={} len={}) push {}'.format(user_id, user_queue_len, chunk))
 
     def len_per_user(self, user_id):
         return self.connector.list_len(self._user_list_name(user_id))
