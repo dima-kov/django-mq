@@ -57,7 +57,7 @@ class ErrorsResolverResult:
         self.ignored_list = []
 
     def succeed(self, message_type_name, number_resolved):
-        self.succeed_list.append((message_type_name, number_resolved,))
+        self.succeed_list.append((message_type_name or '', number_resolved,))
 
     def ignored(self, message_type_name, number_resolved):
-        self.ignored_list.append((message_type_name, number_resolved,))
+        self.ignored_list.append((message_type_name or '', number_resolved,))
