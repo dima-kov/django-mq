@@ -105,6 +105,12 @@ class MqQueueItem(models.Model):
     class Meta:
         abstract = True
 
+    def in_queue(self, commit=True):
+        self.status = self.IN_QUEUE
+        self.in_queue_at = timezone.now()
+        if commit:
+            self.save(update_fields=['status', 'in_queue_at'])
+
     def in_process(self, commit=False):
         self.status = self.IN_PROCESS
         self.in_process_at = timezone.now()
