@@ -13,6 +13,14 @@ from mq.queue.workers import registry as workers_registry
 from mq.queue.workers.abstract import AbstractWorker
 
 
+class DummyLogger:
+    def info(self):
+        return
+
+    def debug(self):
+        return
+
+
 class BaseQueueConsumer(object):
     ready = False
     terminated = False
@@ -22,7 +30,7 @@ class BaseQueueConsumer(object):
     def __init__(self, cid, queue: AbstractQueue, logger_name, **kwargs):
         self.cid = cid
         self.queue = queue
-        self.logger = logging.getLogger(logger_name)
+        self.logger = DummyLogger()
         self.ready_checker = self.ready_checker_class(self.queue)
 
         signal.signal(signal.SIGTERM, self.terminate)
