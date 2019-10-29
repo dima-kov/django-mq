@@ -96,6 +96,8 @@ class ConsumerRegistry(object):
         return self._update(self.consumers_active, cid, status)
 
     def _update(self, key: str, cid: int, status: int):
+        if cid is None:
+            return
         return self.connector.bit_set(key, cid, status)
 
     def _get_unregistered_cids(self):
