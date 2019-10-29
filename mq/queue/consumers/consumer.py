@@ -14,10 +14,10 @@ from mq.queue.workers.abstract import AbstractWorker
 
 
 class DummyLogger:
-    def info(self):
+    def info(self, message):
         return
 
-    def debug(self):
+    def debug(self, message):
         return
 
 
