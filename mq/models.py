@@ -149,15 +149,37 @@ class MqQueueItem(models.Model):
         return tuple(completed_choices)
 
     def get_permitted_status_display(self, user):
-        choices = sorted(self.get_status_choices(user))
-        choices_codes = [choice[0] for choice in choices]
-        status_index = choices_codes.index(self.status)
+        sorted_stats_choices = sorted(self.MQ_STATUS_CHOICES)
+        user_has_perm = user.has_perm(self.permission_status_codename)
 
         if not self.permission_status_codename:
-            return choices[status_index - 1]
+            return self.get_status_display()
 
-        user_has_perm = user.has_perm(self.permission_status_codename)
-        return choices[status_index] if user_has_perm else choices[status_index - 1]
+        previous = None
+        for status_choice in sorted_stats_choices:
+            print(sorted_stats_choices)
+            accessed = self.is_accessed(user_has_perm, status_choice[0])
+            print(accessed)
+            print(previous)
+
+            if self.status == status_choice[0]:
+                print('==')
+                if accessed and user_has_perm:
+                    return status_choice
+                else:
+                    print('NOT ACCESSEd')
+                    return previous
+
+            previous = status_choice if accessed else previous
+
+    def is_accessed(self, user_has_perm, status_choice,):
+        if status_choice not in self.permission_status_tuple:
+            return True
+        else:
+            if user_has_perm:
+                return True
+            return False
+
 
     @property
     def is_succeed(self):
