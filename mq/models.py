@@ -157,17 +157,12 @@ class MqQueueItem(models.Model):
 
         previous = None
         for status_choice in sorted_stats_choices:
-            print(sorted_stats_choices)
             accessed = self.is_accessed(user_has_perm, status_choice[0])
-            print(accessed)
-            print(previous)
 
             if self.status == status_choice[0]:
-                print('==')
                 if accessed and user_has_perm:
                     return status_choice
                 else:
-                    print('NOT ACCESSEd')
                     return previous
 
             previous = status_choice if accessed else previous
