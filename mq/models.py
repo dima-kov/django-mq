@@ -64,8 +64,8 @@ class MqError(models.Model):
 
 
 class MqQueueItem(models.Model):
-    permission_status_codename = ''
-    permission_status_tuple = ()
+    choices_permission_code = None
+    permission_required_choices = ()
 
     CREATED = 10
     IN_QUEUE = 20
@@ -132,49 +132,40 @@ class MqQueueItem(models.Model):
             self.save(update_fields=['status', 'succeed_at'])
 
     def get_status_choices(self, user):
-        completed_choices = []
-
-        if not self.permission_status_codename:
+        if not self.choices_permission_code:
             return self.MQ_STATUS_CHOICES
 
-        user_has_perm = user.has_perm(self.permission_status_codename)
+        accessible_choices = []
+        has_perm = user.has_perm(self.choices_permission_code)
+        for choice in sorted(self.MQ_STATUS_CHOICES):
+            if self.is_choice_accessible(choice, has_perm):
+                accessible_choices.append(choice)
 
-        for choice in self.MQ_STATUS_CHOICES:
-            if choice[0] not in self.permission_status_tuple:
-                completed_choices.append(choice)
-            else:
-                if user_has_perm:
-                    completed_choices.append(choice)
+        return tuple(accessible_choices)
 
-        return tuple(completed_choices)
+    def is_choice_accessible(self, choice, user_has_perm):
+        if choice[0] in self.permission_required_choices:
+            return user_has_perm
+
+        return True
 
     def get_permitted_status_display(self, user):
-        sorted_stats_choices = sorted(self.MQ_STATUS_CHOICES)
-        user_has_perm = user.has_perm(self.permission_status_codename)
-
-        if not self.permission_status_codename:
+        if not self.choices_permission_code:
             return self.get_status_display()
 
-        previous = None
-        for status_choice in sorted_stats_choices:
-            accessed = self.is_accessed(user_has_perm, status_choice[0])
+        sorted_choices = sorted(self.MQ_STATUS_CHOICES)
+        has_perm = user.has_perm(self.choices_permission_code)
 
-            if self.status == status_choice[0]:
-                if accessed and user_has_perm:
-                    return status_choice
+        previous = None
+        for choice in sorted_choices:
+            accessible = self.is_choice_accessible(choice, has_perm)
+            if self.status == choice[0]:
+                if accessible:
+                    return choice[1]
                 else:
                     return previous
 
-            previous = status_choice if accessed else previous
-
-    def is_accessed(self, user_has_perm, status_choice,):
-        if status_choice not in self.permission_status_tuple:
-            return True
-        else:
-            if user_has_perm:
-                return True
-            return False
-
+            previous = choice[1] if accessible else previous
 
     @property
     def is_succeed(self):
