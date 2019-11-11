@@ -64,6 +64,9 @@ class MqError(models.Model):
 
 
 class MqQueueItem(models.Model):
+    permission_status_codename = ''
+    permission_status_tuple = ()
+
     CREATED = 10
     IN_QUEUE = 20
     IN_PROCESS = 30
@@ -127,6 +130,34 @@ class MqQueueItem(models.Model):
         self.succeed_at = timezone.now()
         if commit:
             self.save(update_fields=['status', 'succeed_at'])
+
+    def get_status_choices(self, user):
+        completed_choices = []
+
+        if not self.permission_status_codename:
+            return self.MQ_STATUS_CHOICES
+
+        user_has_perm = user.has_perm(self.permission_status_codename)
+
+        for choice in self.MQ_STATUS_CHOICES:
+            if choice[0] not in self.permission_status_tuple:
+                completed_choices.append(choice)
+            else:
+                if user_has_perm:
+                    completed_choices.append(choice)
+
+        return tuple(completed_choices)
+
+    def get_permitted_status_display(self, user):
+        choices = sorted(self.get_status_choices(user))
+        choices_codes = [choice[0] for choice in choices]
+        status_index = choices_codes.index(self.status)
+
+        if not self.permission_status_codename:
+            return choices[status_index - 1]
+
+        user_has_perm = user.has_perm(self.permission_status_codename)
+        return choices[status_index] if user_has_perm else choices[status_index - 1]
 
     @property
     def is_succeed(self):
