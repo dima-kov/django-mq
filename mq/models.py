@@ -131,20 +131,22 @@ class MqQueueItem(models.Model):
         if commit:
             self.save(update_fields=['status', 'succeed_at'])
 
-    def get_status_choices(self, user):
-        if not self.choices_permission_code:
-            return self.MQ_STATUS_CHOICES
+    @classmethod
+    def get_status_choices(cls, user):
+        if not cls.choices_permission_code:
+            return cls.MQ_STATUS_CHOICES
 
         accessible_choices = []
-        has_perm = user.has_perm(self.choices_permission_code)
-        for choice in sorted(self.MQ_STATUS_CHOICES):
-            if self.is_choice_accessible(choice, has_perm):
+        has_perm = user.has_perm(cls.choices_permission_code)
+        for choice in sorted(cls.MQ_STATUS_CHOICES):
+            if cls.is_choice_accessible(choice, has_perm):
                 accessible_choices.append(choice)
 
         return tuple(accessible_choices)
 
-    def is_choice_accessible(self, choice, user_has_perm):
-        if choice[0] in self.permission_required_choices:
+    @classmethod
+    def is_choice_accessible(cls, choice, user_has_perm):
+        if choice[0] in cls.permission_required_choices:
             return user_has_perm
 
         return True
