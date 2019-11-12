@@ -133,6 +133,10 @@ class MqQueueItem(models.Model):
 
     @classmethod
     def get_status_choices(cls, user):
+        """
+        :param user: User object
+        :return: A tuple of status choices that are available to present User
+        """
         if not cls.choices_permission_code:
             return cls.MQ_STATUS_CHOICES
 
@@ -152,6 +156,10 @@ class MqQueueItem(models.Model):
         return True
 
     def get_permitted_status_display(self, user):
+        """
+        :param user: User object
+        :return: Current status of queue depending on Users permissions
+        """
         if not self.choices_permission_code:
             return self.get_status_display()
 
