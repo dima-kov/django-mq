@@ -64,6 +64,9 @@ class MqError(models.Model):
 
 
 class MqQueueItem(models.Model):
+    choices_permission_code = None
+    permission_required_choices = ()
+
     CREATED = 10
     IN_QUEUE = 20
     IN_PROCESS = 30
@@ -127,6 +130,59 @@ class MqQueueItem(models.Model):
         self.succeed_at = timezone.now()
         if commit:
             self.save(update_fields=['status', 'succeed_at'])
+
+    @classmethod
+    def get_status_choices(cls, user):
+        if not cls.choices_permission_code:
+            return cls.MQ_STATUS_CHOICES
+
+        accessible_choices = []
+        has_perm = user.has_perm(cls.choices_permission_code)
+        for choice in sorted(cls.MQ_STATUS_CHOICES):
+            if cls.is_choice_accessible(choice, has_perm):
+                accessible_choices.append(choice)
+
+        return tuple(accessible_choices)
+
+    @classmethod
+    def is_choice_accessible(cls, choice, user_has_perm):
+        if choice[0] in cls.permission_required_choices:
+            return user_has_perm
+
+        return True
+
+    def get_permitted_status_code(self, user):
+        status_choice = self.get_permitted_status(user)
+        if status_choice is None:
+            return None
+
+        return status_choice[0]
+
+    def get_permitted_status_display(self, user):
+        status_choice = self.get_permitted_status(user)
+        if status_choice is None:
+            return None
+
+        return status_choice[1]
+
+    def get_permitted_status(self, user):
+        if not self.choices_permission_code:
+            return self.status, self.get_status_display()
+
+        sorted_choices = sorted(self.MQ_STATUS_CHOICES)
+        has_perm = user.has_perm(self.choices_permission_code)
+
+        previous = None
+        for choice in sorted_choices:
+            accessible = self.is_choice_accessible(choice, has_perm)
+            if self.status == choice[0]:
+                if accessible:
+                    return choice
+                else:
+                    return previous
+
+            previous = choice if accessible else previous
+        return None
 
     @property
     def is_succeed(self):
