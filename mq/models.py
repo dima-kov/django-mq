@@ -151,6 +151,13 @@ class MqQueueItem(models.Model):
 
         return True
 
+    def get_permitted_status_code(self, user):
+        status_choice = self.get_permitted_status(user)
+        if status_choice is None:
+            return None
+
+        return status_choice[0]
+
     def get_permitted_status_display(self, user):
         status_choice = self.get_permitted_status(user)
         if status_choice is None:
