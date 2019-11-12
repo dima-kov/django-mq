@@ -155,13 +155,20 @@ class MqQueueItem(models.Model):
 
         return True
 
+    def get_permitted_status_code(self, user):
+        status_choice = self.get_permitted_status(user)
+        if status_choice is None:
+            return None
+
+        return status_choice[0]
+
     def get_permitted_status_display(self, user):
         """
         :param user: User object
         :return: Current status of queue depending on Users permissions
         """
         if not self.choices_permission_code:
-            return self.get_status_display()
+            return self.status, self.get_status_display()
 
         sorted_choices = sorted(self.MQ_STATUS_CHOICES)
         has_perm = user.has_perm(self.choices_permission_code)
@@ -171,11 +178,12 @@ class MqQueueItem(models.Model):
             accessible = self.is_choice_accessible(choice, has_perm)
             if self.status == choice[0]:
                 if accessible:
-                    return choice[1]
+                    return choice
                 else:
                     return previous
 
-            previous = choice[1] if accessible else previous
+            previous = choice if accessible else previous
+        return None
 
     @property
     def is_succeed(self):
