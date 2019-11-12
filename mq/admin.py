@@ -7,6 +7,11 @@ class MqErrorAdmin(admin.ModelAdmin):
     list_display = ('raised_at', 'message_type', 'status')
     list_filter = ('message_type',)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.select_related('message_type')
+        return qs
+
 
 admin.site.register(MqError, MqErrorAdmin)
 

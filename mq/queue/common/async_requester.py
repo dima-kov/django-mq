@@ -109,10 +109,10 @@ class AsyncRequesterV2(object):
         attempt = REQUEST_ATTEMPTS
         raised_exc = None
         while attempt != 0:
-            print("[Async requester]. Attempt", attempt)
+            # print("[Async requester]. Attempt", attempt)
             if raised_exc:
                 to_sleep = randint(1, 5)
-                print('sleep', to_sleep)
+                # print('sleep', to_sleep)
                 await asyncio.sleep(to_sleep)
             try:
                 return await request.do()
@@ -129,7 +129,7 @@ class AsyncRequesterV2(object):
                     asyncio.TimeoutError,
                     ConnectionRefusedError,
                     HttpProcessingError) as exc:
-                print('Exception happened!')
+                # print('Exception happened!')
                 raised_exc = exc
             attempt -= 1
 
