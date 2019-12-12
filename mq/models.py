@@ -164,8 +164,19 @@ class MqQueueItem(models.Model):
 
     def get_permitted_status_display(self, user):
         """
-        :param user: User object
-        :return: Current status of queue depending on Users permissions
+        :param user: User
+        :return: Current status name of queue depending on user's permissions
+        """
+        status_choice = self.get_permitted_status(user)
+        if status_choice is None:
+            return None
+
+        return status_choice[1]
+
+    def get_permitted_status(self, user):
+        """
+        :param user: User
+        :return: Current status (code, name) of queue depending on user's permissions
         """
         if not self.choices_permission_code:
             return self.status, self.get_status_display()
