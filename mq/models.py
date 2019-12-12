@@ -192,3 +192,65 @@ class MqQueueItem(models.Model):
     @property
     def is_error(self):
         return self.status == self.ERROR
+
+
+class MqStatusFieldSetter(object):
+
+    def __init__(self, obj, field):
+        self.obj = obj
+        self.field: models.Field = field
+
+    def in_process(self, commit=False):
+        self.check_in_choices(MqQueueItem.IN_PROCESS)
+        self._set(MqQueueItem.IN_PROCESS, commit)
+
+    def error(self, commit=False):
+        self.check_in_choices(MqQueueItem.ERROR)
+        self._set(MqQueueItem.ERROR, commit)
+
+    def succeed(self, commit=True):
+        self.check_in_choices(MqQueueItem.SUCCEED)
+        self._set(MqQueueItem.SUCCEED, commit)
+
+    def check_in_choices(self, status):
+        exists = any([c[0] == status for c in self.field.choices])
+        if not exists:
+            raise ValueError(_(f'You can not set status {status} as it is not in {self.field.name} choices'))
+
+        return True
+
+    def _set(self, value, commit=True):
+        setattr(self.obj, self.field.name, value)
+        if commit:
+            self._save()
+
+    def _save(self, update_fields=('status',)):
+        self.obj.save(update_fields=update_fields)
+
+
+class MqStatusField(models.SmallIntegerField):
+    """
+    A Status Field that can be used on model with several status fields
+
+    For every defined field should be additionally created set interface, like:
+
+
+    class SomeModel(models.Model):
+        status_a = MqStatusField(
+            choices=MqQueueItem.MQ_STATUS_CHOICES
+        )
+        status_b = MqStatusField(
+            choices=MqQueueItem.MQ_STATUS_CHOICES
+        )
+
+        @property
+        def status_a_setter(self):
+            return self._meta.get_field('status_a').set_from_object(self)
+
+        @property
+        def status_b_setter(self):
+            return self._meta.get_field('status_b').set_from_object(self)
+    """
+
+    def set_from_object(self, obj) -> MqStatusFieldSetter:
+        return MqStatusFieldSetter(obj, self)
