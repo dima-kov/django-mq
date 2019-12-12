@@ -37,8 +37,9 @@ class MqStatusFieldTestCase(TestCase):
     def test_setter(self):
         obj = self.TestModel()
 
+        # test setter status_a
         def assert_save(update_fields, *args, **kwargs):
-            self.assertEqual(update_fields, ('status',))
+            self.assertEqual(update_fields, ('status_a',))
 
         obj.save = assert_save
 
@@ -55,3 +56,23 @@ class MqStatusFieldTestCase(TestCase):
 
         with self.assertRaises(ValueError):
             obj.status_a_setter.check_in_choices(5)
+
+        # test setter status_b
+        def assert_save(update_fields, *args, **kwargs):
+            self.assertEqual(update_fields, ('status_b',))
+
+        obj.save = assert_save
+
+        self.assertEqual(obj.status_b, MqQueueItem.CREATED)
+        obj.status_b_setter.in_process()
+
+        self.assertEqual(obj.status_b, MqQueueItem.IN_PROCESS)
+        obj.status_b_setter.error()
+
+        self.assertEqual(obj.status_b, MqQueueItem.ERROR)
+        obj.status_b_setter.succeed()
+
+        self.assertEqual(obj.status_b, MqQueueItem.SUCCEED)
+
+        with self.assertRaises(ValueError):
+            obj.status_b_setter.check_in_choices(5)

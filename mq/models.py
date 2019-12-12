@@ -211,11 +211,11 @@ class MqStatusFieldSetter(object):
         self.obj = obj
         self.field: models.Field = field
 
-    def in_process(self, commit=False):
+    def in_process(self, commit=True):
         self.check_in_choices(MqQueueItem.IN_PROCESS)
         self._set(MqQueueItem.IN_PROCESS, commit)
 
-    def error(self, commit=False):
+    def error(self, commit=True):
         self.check_in_choices(MqQueueItem.ERROR)
         self._set(MqQueueItem.ERROR, commit)
 
@@ -235,7 +235,8 @@ class MqStatusFieldSetter(object):
         if commit:
             self._save()
 
-    def _save(self, update_fields=('status',)):
+    def _save(self, update_fields=None):
+        update_fields = update_fields or (self.field.name, )
         self.obj.save(update_fields=update_fields)
 
 
