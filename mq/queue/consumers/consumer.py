@@ -15,7 +15,6 @@ from mq.queue.workers.abstract import AbstractWorker
 
 class BaseQueueConsumer(object):
     ready = False
-    terminated = False
     queue: AbstractQueue = None
     ready_checker_class = ReadyChecker
 
@@ -31,7 +30,7 @@ class BaseQueueConsumer(object):
         self.queue.consumer_unregister(self.cid)
 
     def terminate(self, _signo, _stack_frame):
-        self.terminated = True
+        raise TerminatedException
 
     async def consume(self):
         try:
@@ -48,9 +47,6 @@ class BaseQueueConsumer(object):
     async def consume_loop(self):
         print('Consumer {} ready'.format(self.cid))
         while True:
-            if self.terminated:
-                raise TerminatedException
-
             message = self.new_message()
             if message is None:
                 self.queue.consumer_inactive(self.cid)
