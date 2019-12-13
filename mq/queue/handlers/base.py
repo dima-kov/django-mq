@@ -30,8 +30,8 @@ class BaseQueueHandler(AsyncLoop):
             [t.cancel() for t in asyncio.Task.all_tasks()]
             print('Pending tasks canceled')
 
-            self.unregister_consumers(consumers)
-            print('Consumers unregistered')
+            # self.unregister_consumers(consumers)
+            # print('Consumers unregistered')
 
             self.run_in_loop(asyncio.ensure_future(asyncio.sleep(2)))
 
@@ -54,6 +54,6 @@ class BaseQueueHandler(AsyncLoop):
             'logger_name': self.consumer_logger,
         }
 
-    @staticmethod
-    def unregister_consumers(consumers):
-        return [c.unregister() for c in consumers]
+    # @staticmethod
+    # def unregister_consumers(consumers):
+    #     return [c.unregister() for c in consumers]

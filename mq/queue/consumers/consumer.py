@@ -30,6 +30,7 @@ class BaseQueueConsumer(object):
         self.queue.consumer_unregister(self.cid)
 
     def terminate(self, _signo, _stack_frame):
+        print(f'Consumer {self.cid}: TerminatedException')
         raise TerminatedException
 
     async def consume(self):
@@ -42,6 +43,7 @@ class BaseQueueConsumer(object):
         except Exception as e:
             self.error(e)
 
+        self.unregister()
         print('Consumer {} exited'.format(self.cid))
 
     async def consume_loop(self):
