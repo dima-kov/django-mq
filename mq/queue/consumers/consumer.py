@@ -30,13 +30,13 @@ class BaseQueueConsumer(object):
         self.queue.consumer_unregister(self.cid)
 
     def terminate(self, _signo, _stack_frame):
-        print(f'Consumer {self.cid}: TerminatedException')
         raise TerminatedException
 
     async def consume(self):
         try:
             await self.consume_loop()
         except TerminatedException as e:
+            print(f'Consumer {self.cid}: TerminatedException')
             raise e
         except asyncio.CancelledError:
             pass
