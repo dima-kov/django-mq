@@ -25,6 +25,7 @@ class BaseQueueConsumer(object):
         self.ready_checker = self.ready_checker_class(self.queue)
 
         signal.signal(signal.SIGTERM, self.terminate)
+        signal.signal(signal.SIGINT, self.terminate)
 
     def unregister(self):
         self.queue.consumer_unregister(self.cid)
