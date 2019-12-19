@@ -26,7 +26,6 @@ class BaseQueueConsumer(object):
 
         signal.signal(signal.SIGTERM, self.terminate)
         signal.signal(signal.SIGINT, self.terminate)
-        signal.signal(signal.SIGKILL, self.terminate)
 
     def unregister(self):
         self.queue.consumer_unregister(self.cid)
