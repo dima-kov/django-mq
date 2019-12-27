@@ -190,6 +190,9 @@ class PerUserQueueMixin(Queue):
         users_id = User.objects.all().values_list('id', flat=True)
         per_user, summed = self._count_per_user(users_id)
 
+        # Refuse if number elements in queue is bigger than gathering size
+        if self.len_wait() >= self.gathering_size:
+            return
         print('Gathering per users queue: {}'.format(self.__class__.__name__))
         for user_id, user_queue_len in per_user.items():
             load_percent = math.ceil(user_queue_len / summed * 100)
