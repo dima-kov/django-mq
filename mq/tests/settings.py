@@ -21,7 +21,7 @@ DATABASES = {
         'USER': 'mq',
         'PASSWORD': 'mq',
         'HOST': 'localhost',
-        'PORT': 5433,
+        'PORT': 5432,
     }
 }
 
