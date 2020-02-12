@@ -21,7 +21,7 @@ DATABASES = {
         'USER': 'mq',
         'PASSWORD': 'mq',
         'HOST': 'localhost',
-        'PORT': 5432,
+        'PORT': 5433,
     }
 }
 
@@ -72,3 +72,5 @@ MQ_LOGGING_DIRECTORY = '/Users/dima/projects/moze/logs'
 from mq.logging import configure_logging
 
 configure_logging(LOGGING, MQ_LOGGING_LOGGERS, MQ_LOGGING_DIRECTORY)
+
+MQ_FLUSH_ERRORS_DAYS = 10
