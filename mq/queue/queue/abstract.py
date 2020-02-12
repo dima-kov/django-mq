@@ -191,7 +191,13 @@ class PerUserQueueMixin(Queue):
         per_user, summed = self._count_per_user(users_id)
 
         # Refuse if number elements in queue is bigger than gathering size
-        if self.len_wait() >= self.gathering_size:
+        queue_size = self.len_wait()
+        if queue_size >= self.gathering_size:
+            print('Queue {} size is more that gathering size: {} {}'.format(
+                self.__class__.__name__,
+                queue_size,
+                self.gathering_size,
+            ))
             return
         print('Gathering per users queue: {}'.format(self.__class__.__name__))
         for user_id, user_queue_len in per_user.items():
