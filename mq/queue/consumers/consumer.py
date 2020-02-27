@@ -5,7 +5,7 @@ import traceback
 
 from mq.models import MqError
 from mq.queue.consumers.ready_checker import ReadyChecker
-from mq.queue.exceptions import TerminatedException, RestartMessageException, UnhandledMessageTypeException
+from mq.queue.exceptions import TerminatedException, UnhandledMessageTypeException
 from mq.queue.messages import Message, message_type_registry
 from mq.queue.messages.messages import MessageDecoder
 from mq.queue.queue.abstract import AbstractQueue
@@ -74,8 +74,6 @@ class BaseQueueConsumer(object):
             worker = self.new_worker(message)
             await worker.process()
             self.to_queue(worker)
-        except RestartMessageException:
-            self.queue.push_wait(raw_message, start=True)
 
         except Exception as e:
             self.error(e, message, raw_message)
