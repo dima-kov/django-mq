@@ -5,11 +5,11 @@ from mq.queue.workers import registry
 class ReadyChecker(object):
     """
     Class describes whether queue workers can be considered as ready
-    :param queue: queue obj
+    :param check_queue: a queue for which worker ready status should be checked
     """
 
-    def __init__(self, queue: AbstractQueue):
-        self.queue = queue
+    def __init__(self, check_queue: AbstractQueue):
+        self.queue = check_queue
         self.message_type = self.queue.get_main_handled_type()
         self.worker = registry.get(self.message_type.name)
 

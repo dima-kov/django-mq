@@ -14,15 +14,24 @@ from mq.queue.workers.abstract import AbstractWorker
 
 
 class BaseQueueConsumer(object):
+    """
+    :param cid: consumer id
+    :param queue: queue from which consumer will consume messages
+    :param logger_name: logger name
+    :param unready_queue: a queue in which unready message will be pushed
+        if the worker is not ready. If not specified, unready message is returned
+        into a consumer from ready checker and is being handled by it without pushing into queue
+    """
     ready = False
     queue: AbstractQueue = None
     ready_checker_class = ReadyChecker
 
-    def __init__(self, cid, queue: AbstractQueue, logger_name, **kwargs):
+    def __init__(self, cid, queue: AbstractQueue, logger_name, unready_queue: AbstractQueue = None):
         self.cid = cid
         self.queue = queue
         self.logger = logging.getLogger(logger_name)
         self.ready_checker = self.ready_checker_class(self.queue)
+        self.unready_queue = unready_queue
 
         signal.signal(signal.SIGTERM, self.terminate)
         signal.signal(signal.SIGINT, self.terminate)
@@ -34,6 +43,9 @@ class BaseQueueConsumer(object):
         raise TerminatedException
 
     async def consume(self):
+        """
+        Main entry point into consumer
+        """
         try:
             await self.consume_loop()
         except TerminatedException as e:
@@ -48,6 +60,9 @@ class BaseQueueConsumer(object):
         print('Consumer {} exited'.format(self.cid))
 
     async def consume_loop(self):
+        """
+        Method starts consuming messages from queue
+        """
         print('Consumer {} ready'.format(self.cid))
         while True:
             message = self.new_message()
@@ -60,11 +75,26 @@ class BaseQueueConsumer(object):
             await self.consume_message(message)
 
     def new_message(self):
+        """
+        Method returns message for handling
+
+        Method checks whether worker is ready for work, if yes: pops first message from queue and returns it.
+
+        If worker is unready and unready_queue is specified during consumer init, that worker's unready message
+        will be pushed into this unread queue, but self consumer will receive nothing
+
+        If no unready_queue specified unready message from worker will be returned
+        """
         self.ready = self.ready_checker.is_ready(self.cid)
         if self.ready:
             return self.queue.pop_wait_push_processing()
 
-        return self.ready_checker.get_unready_message(self.cid)
+        unready_message = self.ready_checker.get_unready_message(self.cid)
+        if self.unready_queue:
+            self.unready_queue.push_wait(unready_message, start=True)
+            return
+
+        return unready_message
 
     async def consume_message(self, raw_message):
         self.logger.info("New message from queue {}".format(raw_message))
