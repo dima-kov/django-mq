@@ -64,7 +64,7 @@ class BaseQueueConsumer(object):
         if self.ready:
             return self.queue.pop_wait_push_processing()
 
-        return self.ready_checker.is_ready_message(self.cid)
+        return self.ready_checker.get_unready_message(self.cid)
 
     async def consume_message(self, raw_message):
         self.logger.info("New message from queue {}".format(raw_message))

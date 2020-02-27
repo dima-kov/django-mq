@@ -3,6 +3,10 @@ from mq.queue.workers import registry
 
 
 class ReadyChecker(object):
+    """
+    Class describes whether queue workers can be considered as ready
+    :param queue: queue obj
+    """
 
     def __init__(self, queue: AbstractQueue):
         self.queue = queue
@@ -10,15 +14,38 @@ class ReadyChecker(object):
         self.worker = registry.get(self.message_type.name)
 
     def is_ready(self, cid):
+        """
+        Method checks whether worker with cid is considered ready
+        and updates its ready status into queue
+
+        :param cid: consumer id
+        :return: bool
+        """
         ready = self.worker.is_ready(cid)
         self.queue.consumer_ready(cid, ready)
         return ready
 
-    def is_ready_message(self, cid):
+    def get_unready_message(self, cid):
+        """
+        Method checks whether worker already returned message to become ready,
+        if no returns queue message that should be handled by queue consumer to make worker active
+
+        :param cid: consumer id
+        :return: str
+        """
         if not self.worker.is_ready_message(cid):
             return None
 
         return self.unready_message(cid)
 
     def unready_message(self, cid):
-        return None
+        """
+        Method should return str with message that will be pushed into queue
+        when worker is considered as unready
+
+        Should be implemented by child classes
+
+        :param cid: consumer id
+        :return: str or None
+        """
+        return
