@@ -29,7 +29,7 @@ class BaseQueueConsumer(object):
     def __init__(self, cid, queue: AbstractQueue, logger_name, unready_queue: AbstractQueue = None):
         self.cid = cid
         self.queue = queue
-        # self.logger = logging.getLogger(logger_name)
+        self.logger = logging.getLogger(logger_name)
         self.ready_checker = self.ready_checker_class(self.queue)
         self.unready_queue = unready_queue
 
@@ -78,15 +78,12 @@ class BaseQueueConsumer(object):
         """
         Method returns message for handling
 
-        Method checks whether worker is ready for work:
-        1. if yes: pops first message from queue and returns it.
+        Method checks whether worker is ready for work, if yes: pops first message from queue and returns it.
 
-        2. if no and unready_queue is specified worker's unready message
-        will be pushed into unread queue and returned None
-        (self consumer will not start any worker)
+        If worker is unready and unready_queue is specified during consumer init, that worker's unready message
+        will be pushed into this unread queue, but self consumer will receive nothing
 
-        3. if no and no unready_queue specified unready message from worker will be returned
-        (self consumer will start worker with this message)
+        If no unready_queue specified unready message from worker will be returned
         """
         self.ready = self.ready_checker.is_ready(self.cid)
         if self.ready:
@@ -124,7 +121,7 @@ class BaseQueueConsumer(object):
             'consumer_id': self.cid,
             'message_content': message.content,
             'message_object_id': message.object_id,
-            # 'logger': self.logger
+            'logger': self.logger
         }
 
     def decode_message(self, raw_message) -> Message:
@@ -135,7 +132,7 @@ class BaseQueueConsumer(object):
         return message
 
     def error(self, e, message=None, raw_message=None):
-        # self.logger.error('Error during processing queue item: \n{}\n'.format(e))
+        self.logger.error('Error during processing queue item: \n{}\n'.format(e))
         message_type = message_type_registry.get(message.type) if message else MqError.UNKNOWN
         message_type = message_type.object if message_type else MqError.UNKNOWN
         MqError.objects.create(
@@ -144,7 +141,7 @@ class BaseQueueConsumer(object):
         )
 
     def to_queue(self, worker: AbstractWorker):
-        # self.logger.info("Back to queue from worker. Messages: {}".format(worker.to_queue))
+        self.logger.info("Back to queue from worker. Messages: {}".format(worker.to_queue))
         self.queue.push_wait(worker.to_queue, start=True)
 
 
