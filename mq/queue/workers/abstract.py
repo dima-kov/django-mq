@@ -9,10 +9,11 @@ class AbstractWorker:
         E.g.: pushing pdf link for download to queue
     """
 
-    def __init__(self, consumer_id: int, message_content, message_object_id):
+    def __init__(self, consumer_id: int, message_content, message_object_id, logger):
         self.cid = consumer_id
         self.message_content = message_content
         self.message_object_id = message_object_id
+        self.logger = logger
 
         self.to_queue = []
         self.to_next_queue = []
