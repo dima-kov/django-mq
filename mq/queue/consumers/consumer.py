@@ -97,7 +97,7 @@ class BaseQueueConsumer(object):
         return unready_message
 
     async def consume_message(self, raw_message):
-        # self.logger.info("New message from queue {}".format(raw_message))
+        self.logger.info("New message from queue {}".format(raw_message))
         worker, message = None, None
         try:
             message = self.decode_message(raw_message)
