@@ -1,14 +1,11 @@
-import asyncio
-
-from mq.queue.common.loop import AsyncLoop
+from mq.queue.consumers.sync import SyncQueueConsumer
 from mq.queue.exceptions import TerminatedException
-from mq.queue.consumers import QueueConsumer
 from mq.queue.queue.abstract import AbstractQueue
 
 
 class SyncQueueHandler(object):
     queue: AbstractQueue = None
-    consumer_class = SyncConsumer
+    consumer_class = SyncQueueConsumer
     consumer_logger = '{consumer_item}'
 
     def __init__(self):
