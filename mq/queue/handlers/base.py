@@ -13,8 +13,8 @@ class BaseQueueHandler(AsyncLoop):
     consumers_number = 10  # default value
     consumer_logger = '{consumer_item}'
 
-    def __init__(self, *args, **kwargs):
-        super(BaseQueueHandler, self).__init__(*args, **kwargs)
+    def __init__(self):
+        super(BaseQueueHandler, self).__init__()
         self.queue.processing_to_wait()
 
     def handle(self):
