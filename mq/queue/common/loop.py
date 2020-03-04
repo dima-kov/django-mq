@@ -1,5 +1,7 @@
 import asyncio
 
+import uvloop
+
 
 class AsyncLoop(object):
 
@@ -14,6 +16,7 @@ class AsyncLoop(object):
 
     @staticmethod
     def get_loop():
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         try:
             loop = asyncio.get_event_loop()
         except RuntimeError:

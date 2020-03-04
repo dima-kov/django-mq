@@ -35,5 +35,6 @@ setup(
         'redis>3.0',
         'aiohttp>3.6',
         'aiodns',
+        'uvloop>0.0'
     ]
 )
