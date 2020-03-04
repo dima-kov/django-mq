@@ -29,12 +29,11 @@ class AsyncCookiesRequester(object):
 
 class AsyncRequestSender(object):
 
-    def __init__(self):
-        self.client = aiohttp.ClientSession()
-
-    async def get(self, url, cookies=None, **kwargs):
-        async with self.client.get(url, cookies=cookies, **kwargs) as resp:
-            return await resp.text()
+    @staticmethod
+    async def get(url, cookies=None, **kwargs):
+        async with aiohttp.ClientSession(cookies=cookies) as client:
+            async with client.get(url, **kwargs) as resp:
+                return await resp.text()
 
     @staticmethod
     async def get_json(url, cookies=None, **kwargs):
