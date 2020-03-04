@@ -76,7 +76,7 @@ class AsyncRequest(object):
     async def do(self):
         return await self.method(
             self.url, data=self.data, cookies=self.cookies,
-            headers=self.headers, proxy=self.proxy, verify_ssl=self.verify_ssl, **self.kwargs
+            headers=self.headers, proxy=self.proxy, ssl=self.verify_ssl, **self.kwargs
         )
 
     @property
