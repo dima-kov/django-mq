@@ -33,5 +33,7 @@ setup(
     install_requires=[
         'Django>2.0',
         'redis>3.0',
+        'aiohttp>3.6',
+        'aiodns',
     ]
 )
