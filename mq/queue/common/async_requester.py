@@ -32,9 +32,6 @@ class AsyncRequestSender(object):
     def __init__(self):
         self.client = aiohttp.ClientSession()
 
-    def __del__(self):
-        self.client.close()
-
     async def get(self, url, cookies=None, **kwargs):
         async with self.client.get(url, cookies=cookies, **kwargs) as resp:
             return await resp.text()
