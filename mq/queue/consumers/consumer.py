@@ -50,7 +50,7 @@ class BaseQueueConsumer(object):
         Main entry point into consumer
         """
         try:
-            async with aiohttp.ClientSession as client:
+            async with aiohttp.ClientSession() as client:
                 await self.consume_loop(client)
         except TerminatedException as e:
             print(f'Consumer {self.cid}: TerminatedException')
@@ -58,6 +58,7 @@ class BaseQueueConsumer(object):
         except asyncio.CancelledError:
             pass
         except Exception as e:
+            raise e
             self.error(e)
 
         self.unregister()

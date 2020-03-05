@@ -26,9 +26,11 @@ class BaseQueueHandler(object):
         try:
             print('Start handling')
             consumers = [i.consume() for i in consumers]
-            loop.run_until_complete(asyncio.wait(consumers))
+            loop.run_until_complete(asyncio.gather(*consumers))
         except KeyboardInterrupt:
             pass
+        except Exception as e:
+            raise e
         finally:
             print('Shutdown ...')
             [t.cancel() for t in asyncio.Task.all_tasks()]
