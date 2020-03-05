@@ -1,12 +1,12 @@
 import asyncio
 
-from mq.queue.common.loop import AsyncLoop
-from mq.queue.exceptions import TerminatedException
+import uvloop
+
 from mq.queue.consumers import QueueConsumer
 from mq.queue.queue.abstract import AbstractQueue
 
 
-class BaseQueueHandler(AsyncLoop):
+class BaseQueueHandler(object):
     queue: AbstractQueue = None
     consumer_class = QueueConsumer
 
@@ -20,10 +20,14 @@ class BaseQueueHandler(AsyncLoop):
     def handle(self):
         consumers = self.generate_consumers()
         print('Consumers registered')
+
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        loop = asyncio.get_event_loop()
         try:
             print('Start handling')
-            self.run_multiple([i.consume() for i in consumers])
-        except (KeyboardInterrupt, TerminatedException):
+            consumers = [i.consume() for i in consumers]
+            loop.run_until_complete(asyncio.wait(consumers))
+        except KeyboardInterrupt:
             pass
         finally:
             print('Shutdown ...')
@@ -34,12 +38,12 @@ class BaseQueueHandler(AsyncLoop):
             print('Consumers unregistered')
 
             print('Ensure future - sleep 2s')
-            self.run_in_loop(asyncio.ensure_future(asyncio.sleep(2)))
+            loop.run_until_complete(asyncio.ensure_future(asyncio.sleep(2)))
 
-            self.loop.stop()
+            loop.stop()
             print('Loop stopped')
 
-        self.loop.close()
+        loop.close()
         print('Loop closed')
 
     def generate_consumers(self):
