@@ -2,6 +2,7 @@ import asyncio
 from random import randint
 
 import aiohttp
+from aiohttp import ClientSession
 from aiohttp.http_exceptions import HttpProcessingError
 
 REQUEST_ATTEMPTS = 3
@@ -10,54 +11,50 @@ REQUEST_RETIRES_BACKOFF = 3
 REQUEST_BACKOFF_INTERVAL = 0.9
 
 
-class AsyncCookiesRequester(object):
-
-    async def get(self, url, proxy=None, **kwargs):
-        async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
-            async with session.get(url, proxy=proxy, **kwargs):
-                return self.cookies(session.cookie_jar)
-
-    async def get_cookies_and_html(self, url, proxy=None, **kwargs):
-        async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
-            async with session.get(url, proxy=proxy, **kwargs) as response:
-                return await response.text(), self.cookies(session.cookie_jar)
-
-    @staticmethod
-    def cookies(jar):
-        return {c.key: c.value for c in jar}
+#
+# class AsyncCookiesRequester(object):
+#
+#     async def get(self, url, proxy=None, **kwargs):
+#         async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
+#             async with session.get(url, proxy=proxy, **kwargs):
+#                 return self.cookies(session.cookie_jar)
+#
+#     async def get_cookies_and_html(self, url, proxy=None, **kwargs):
+#         async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar()) as session:
+#             async with session.get(url, proxy=proxy, **kwargs) as response:
+#                 return await response.text(), self.cookies(session.cookie_jar)
+#
+#     @staticmethod
+#     def cookies(jar):
+#         return {c.key: c.value for c in jar}
 
 
 class AsyncRequestSender(object):
 
     @staticmethod
-    async def get(url, cookies=None, **kwargs):
-        async with aiohttp.ClientSession(cookies=cookies) as client:
-            async with client.get(url, **kwargs) as resp:
-                return await resp.text()
+    async def get(client: ClientSession, url, **kwargs):
+        async with client.get(url, **kwargs) as resp:
+            return await resp.text()
 
     @staticmethod
-    async def get_json(url, cookies=None, **kwargs):
-        async with aiohttp.ClientSession(cookies=cookies) as client:
-            async with client.get(url, **kwargs) as resp:
-                return await resp.json()
+    async def get_json(client: ClientSession, url, **kwargs):
+        async with client.get(url, **kwargs) as resp:
+            return await resp.json()
 
     @staticmethod
-    async def get_binary(url, cookies=None, **kwargs):
-        async with aiohttp.ClientSession(cookies=cookies) as client:
-            async with client.post(url, **kwargs) as resp:
-                return await resp.read()
+    async def get_binary(client: ClientSession, url, **kwargs):
+        async with client.post(url, **kwargs) as resp:
+            return await resp.read()
 
     @staticmethod
-    async def post(url, cookies=None, **kwargs):
-        async with aiohttp.ClientSession(cookies=cookies) as client:
-            async with client.post(url, **kwargs) as resp:
-                return await resp.text()
+    async def post(client: ClientSession, url, **kwargs):
+        async with client.post(url, **kwargs) as resp:
+            return await resp.text()
 
     @staticmethod
-    async def post_json(url, cookies=None, **kwargs):
-        async with aiohttp.ClientSession(cookies=cookies) as client:
-            async with client.post(url, **kwargs) as resp:
-                return await resp.json()
+    async def post_json(client: ClientSession, url, **kwargs):
+        async with client.post(url, **kwargs) as resp:
+            return await resp.json()
 
 
 class AsyncRequest(object):
@@ -73,10 +70,16 @@ class AsyncRequest(object):
         self.verify_ssl = verify_ssl
         self.kwargs = kwargs
 
-    async def do(self):
+    async def do(self, session):
         return await self.method(
-            self.url, data=self.data, cookies=self.cookies,
-            headers=self.headers, proxy=self.proxy, ssl=self.verify_ssl, **self.kwargs
+            client=session,
+            url=self.url,
+            data=self.data,
+            cookies=self.cookies,
+            headers=self.headers,
+            proxy=self.proxy,
+            ssl=self.verify_ssl,
+            **self.kwargs
         )
 
     @property
@@ -89,6 +92,9 @@ class AsyncRequest(object):
 
 
 class AsyncRequesterV2(object):
+
+    def __init__(self, session: ClientSession):
+        self.session: ClientSession = session
 
     async def get(self, url, **kwargs):
         return await self.handle(AsyncRequest('get', url, **kwargs))
@@ -109,27 +115,22 @@ class AsyncRequesterV2(object):
         attempt = REQUEST_ATTEMPTS
         raised_exc = None
         while attempt != 0:
-            # print("[Async requester]. Attempt", attempt)
             if raised_exc:
                 to_sleep = randint(1, 5)
-                # print('sleep', to_sleep)
                 await asyncio.sleep(to_sleep)
             try:
-                return await request.do()
+                return await request.do(session=self.session)
             except (aiohttp.ClientResponseError,
                     aiohttp.ClientOSError,
                     aiohttp.ClientConnectorError,
-                    aiohttp.client_exceptions.ServerDisconnectedError,
-                    aiohttp.client_exceptions.ClientOSError,
-                    aiohttp.client_exceptions.ClientConnectionError,
                     aiohttp.ClientConnectionError,
+                    aiohttp.ServerDisconnectedError,
                     aiohttp.ClientProxyConnectionError,
                     aiohttp.ClientHttpProxyError,
                     TimeoutError,
                     asyncio.TimeoutError,
                     ConnectionRefusedError,
                     HttpProcessingError) as exc:
-                # print('Exception happened!')
                 raised_exc = exc
             attempt -= 1
 

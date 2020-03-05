@@ -1,3 +1,6 @@
+from mq.queue.common.async_requester import AsyncRequesterV2
+
+
 class AbstractWorker:
     """
         :message_content
@@ -19,7 +22,7 @@ class AbstractWorker:
         self.to_next_queue = []
         self.to_previous_queue = []
 
-    async def process(self):
+    async def process(self, requester: AsyncRequesterV2):
         raise NotImplemented()
 
     @classmethod

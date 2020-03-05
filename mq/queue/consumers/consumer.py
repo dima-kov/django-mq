@@ -3,7 +3,10 @@ import logging
 import signal
 import traceback
 
+import aiohttp
+
 from mq.models import MqError
+from mq.queue.common.async_requester import AsyncRequesterV2
 from mq.queue.consumers.ready_checker import ReadyChecker
 from mq.queue.exceptions import TerminatedException, UnhandledMessageTypeException
 from mq.queue.messages import Message, message_type_registry
@@ -47,7 +50,8 @@ class BaseQueueConsumer(object):
         Main entry point into consumer
         """
         try:
-            await self.consume_loop()
+            async with aiohttp.ClientSession as client:
+                await self.consume_loop(client)
         except TerminatedException as e:
             print(f'Consumer {self.cid}: TerminatedException')
             raise e
@@ -59,11 +63,12 @@ class BaseQueueConsumer(object):
         self.unregister()
         print('Consumer {} exited'.format(self.cid))
 
-    async def consume_loop(self):
+    async def consume_loop(self, client: aiohttp.ClientSession):
         """
         Method starts consuming messages from queue
         """
         print('Consumer {} ready'.format(self.cid))
+        requester = AsyncRequesterV2(client)
         while True:
             message = self.new_message()
             if message is None:
@@ -72,7 +77,7 @@ class BaseQueueConsumer(object):
                 continue
 
             self.queue.consumer_active(self.cid)
-            await self.consume_message(message)
+            await self.consume_message(message, requester)
 
     def new_message(self):
         """
@@ -96,13 +101,13 @@ class BaseQueueConsumer(object):
 
         return unready_message
 
-    async def consume_message(self, raw_message):
+    async def consume_message(self, raw_message, requester):
         self.logger.info("New message from queue {}".format(raw_message))
         worker, message = None, None
         try:
             message = self.decode_message(raw_message)
             worker = self.new_worker(message)
-            await worker.process()
+            await worker.process(requester)
             self.to_queue(worker)
 
         except Exception as e:
