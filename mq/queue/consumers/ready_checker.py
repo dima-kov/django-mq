@@ -21,7 +21,7 @@ class ReadyChecker(object):
         :param cid: consumer id
         :return: bool
         """
-        ready = await self.worker.is_ready(cid)
+        ready = self.worker.is_ready(cid)
         self.queue.consumer_ready(cid, ready)
         return ready
 
