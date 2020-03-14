@@ -30,7 +30,7 @@ class BaseQueueConsumer(object):
         self.cid = cid
         self.queue = queue
         self.logger = logging.getLogger(logger_name)
-        self.ready_checker = self.ready_checker_class(self.queue)
+        self.ready_checker = self.get_ready_checker()
         self.unready_queue = unready_queue
 
         signal.signal(signal.SIGTERM, self.terminate)
@@ -143,6 +143,9 @@ class BaseQueueConsumer(object):
     def to_queue(self, worker: AbstractWorker):
         self.logger.info("Back to queue from worker. Messages: {}".format(worker.to_queue))
         self.queue.push_wait(worker.to_queue, start=True)
+
+    def get_ready_checker(self):
+        return self.ready_checker_class(self.queue)
 
 
 class QueueConsumer(BaseQueueConsumer):
