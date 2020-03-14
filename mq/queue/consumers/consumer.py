@@ -54,7 +54,7 @@ class BaseQueueConsumer(object):
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            self.error(e)
+            await self.error(e)
 
         self.unregister()
         print('Consumer {} exited'.format(self.cid))
@@ -106,7 +106,7 @@ class BaseQueueConsumer(object):
             self.to_queue(worker)
 
         except Exception as e:
-            self.error(e, message, raw_message)
+            await self.error(e, message, raw_message)
             if worker:
                 worker.error()
         finally:
@@ -131,7 +131,7 @@ class BaseQueueConsumer(object):
 
         return message
 
-    def error(self, e, message=None, raw_message=None):
+    async def error(self, e, message=None, raw_message=None):
         self.logger.error('Error during processing queue item: \n{}\n'.format(e))
         message_type = message_type_registry.get(message.type) if message else MqError.UNKNOWN
         message_type = message_type.object if message_type else MqError.UNKNOWN
