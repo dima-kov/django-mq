@@ -10,7 +10,7 @@ class ChainStartQueueConsumer(BaseQueueConsumer):
         self.next_queue = next_queue
 
     def new_message(self):
-        self.ready_checker.is_ready(self.cid)
+        await self.ready_checker.is_ready(self.cid)
         queue_active = self.queue.consumers_active()
         next_queue_wait = self.next_queue.len_wait()
         capacity = self.next_queue.capacity * self.next_queue.consumers_ready()

@@ -85,11 +85,11 @@ class BaseQueueConsumer(object):
 
         If no unready_queue specified unready message from worker will be returned
         """
-        self.ready = self.ready_checker.is_ready(self.cid)
+        self.ready = await self.ready_checker.is_ready(self.cid)
         if self.ready:
             return self.queue.pop_wait_push_processing()
 
-        unready_message = self.ready_checker.get_unready_message(self.cid)
+        unready_message = await self.ready_checker.get_unready_message(self.cid)
         if self.unready_queue:
             self.unready_queue.push_wait(unready_message, start=True)
             return

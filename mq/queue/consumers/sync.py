@@ -61,10 +61,11 @@ class SyncQueueConsumer(object):
 
         If worker is unready and unready_queue is specified during consumer init, that worker's unready message
         """
-        self.ready = self.ready_checker.is_ready(self.cid)
+        self.ready = await self.ready_checker.is_ready(self.cid)
         if self.ready:
             return self.queue.pop_wait_push_processing()
 
+        # todo: delete
         unready_message = self.ready_checker.get_unready_message(self.cid)
         return unready_message
 
