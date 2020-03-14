@@ -65,7 +65,7 @@ class BaseQueueConsumer(object):
         """
         print('Consumer {} ready'.format(self.cid))
         while True:
-            message = self.new_message()
+            message = await self.new_message()
             if message is None:
                 self.queue.consumer_inactive(self.cid)
                 await asyncio.sleep(1)
@@ -74,7 +74,7 @@ class BaseQueueConsumer(object):
             self.queue.consumer_active(self.cid)
             await self.consume_message(message)
 
-    def new_message(self):
+    async def new_message(self):
         """
         Method returns message for handling
 
