@@ -30,7 +30,7 @@ class MqError(models.Model):
     UNKNOWN = None
 
     queue_message = models.CharField(
-        max_length=1055,
+        max_length=2500,
         verbose_name=_('Повідомлення черги'),
         null=True, blank=True,
     )
