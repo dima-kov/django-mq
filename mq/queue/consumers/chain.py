@@ -9,14 +9,14 @@ class ChainStartQueueConsumer(BaseQueueConsumer):
         super().__init__(**kwargs)
         self.next_queue = next_queue
 
-    def new_message(self):
-        self.ready_checker.is_ready(self.cid)
+    async def new_message(self):
+        await self.ready_checker.is_ready(self.cid)
         queue_active = self.queue.consumers_active()
         next_queue_wait = self.next_queue.len_wait()
         capacity = self.next_queue.capacity * self.next_queue.consumers_ready()
 
         next_queue_full = queue_active + next_queue_wait >= capacity
-        return None if next_queue_full else super().new_message()
+        return None if next_queue_full else await super().new_message()
 
     def to_queue(self, worker: AbstractWorker):
         super().to_queue(worker)

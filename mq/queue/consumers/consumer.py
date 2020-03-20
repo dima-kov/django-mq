@@ -30,7 +30,7 @@ class BaseQueueConsumer(object):
         self.cid = cid
         self.queue = queue
         self.logger = logging.getLogger(logger_name)
-        self.ready_checker = self.ready_checker_class(self.queue)
+        self.ready_checker = self.get_ready_checker()
         self.unready_queue = unready_queue
 
         signal.signal(signal.SIGTERM, self.terminate)
@@ -54,7 +54,7 @@ class BaseQueueConsumer(object):
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            self.error(e)
+            await self.error(e)
 
         self.unregister()
         print('Consumer {} exited'.format(self.cid))
@@ -65,7 +65,7 @@ class BaseQueueConsumer(object):
         """
         print('Consumer {} ready'.format(self.cid))
         while True:
-            message = self.new_message()
+            message = await self.new_message()
             if message is None:
                 self.queue.consumer_inactive(self.cid)
                 await asyncio.sleep(1)
@@ -74,7 +74,7 @@ class BaseQueueConsumer(object):
             self.queue.consumer_active(self.cid)
             await self.consume_message(message)
 
-    def new_message(self):
+    async def new_message(self):
         """
         Method returns message for handling
 
@@ -85,11 +85,11 @@ class BaseQueueConsumer(object):
 
         If no unready_queue specified unready message from worker will be returned
         """
-        self.ready = self.ready_checker.is_ready(self.cid)
+        self.ready = await self.ready_checker.is_ready(self.cid)
         if self.ready:
             return self.queue.pop_wait_push_processing()
 
-        unready_message = self.ready_checker.get_unready_message(self.cid)
+        unready_message = await self.ready_checker.get_unready_message(self.cid)
         if self.unready_queue:
             self.unready_queue.push_wait(unready_message, start=True)
             return
@@ -106,7 +106,7 @@ class BaseQueueConsumer(object):
             self.to_queue(worker)
 
         except Exception as e:
-            self.error(e, message, raw_message)
+            await self.error(e, message, raw_message)
             if worker:
                 worker.error()
         finally:
@@ -131,7 +131,7 @@ class BaseQueueConsumer(object):
 
         return message
 
-    def error(self, e, message=None, raw_message=None):
+    async def error(self, e, message=None, raw_message=None):
         self.logger.error('Error during processing queue item: \n{}\n'.format(e))
         message_type = message_type_registry.get(message.type) if message else MqError.UNKNOWN
         message_type = message_type.object if message_type else MqError.UNKNOWN
@@ -143,6 +143,9 @@ class BaseQueueConsumer(object):
     def to_queue(self, worker: AbstractWorker):
         self.logger.info("Back to queue from worker. Messages: {}".format(worker.to_queue))
         self.queue.push_wait(worker.to_queue, start=True)
+
+    def get_ready_checker(self):
+        return self.ready_checker_class(self.queue)
 
 
 class QueueConsumer(BaseQueueConsumer):
