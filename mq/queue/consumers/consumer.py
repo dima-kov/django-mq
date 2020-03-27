@@ -103,7 +103,6 @@ class BaseQueueConsumer(object):
             message = self.decode_message(raw_message)
             worker = self.new_worker(message)
             await worker.process()
-            self.to_queue(worker)
 
         except Exception as e:
             await self.error(e, message, raw_message)
@@ -111,6 +110,8 @@ class BaseQueueConsumer(object):
                 worker.error()
         finally:
             self.queue.processing_delete(raw_message)
+            if worker:
+                self.to_queue(worker)
 
     def new_worker(self, message: Message) -> AbstractWorker:
         worker_class = workers_registry.get(message.type)
