@@ -15,6 +15,8 @@ class AbstractWorker:
         self.message_object_id = message_object_id
         self.logger = logger
 
+        # TODO: get rid of to_queue, to_next_queue, to_previous_queue,
+        #  because it breaks DIP from SOLID
         self.to_queue = []
         self.to_next_queue = []
         self.to_previous_queue = []
