@@ -39,6 +39,8 @@ class AsyncRequestSender(object):
     async def get_json(url, cookies=None, **kwargs):
         async with aiohttp.ClientSession(cookies=cookies) as client:
             async with client.get(url, **kwargs) as resp:
+                if resp.status == 403:
+                    raise HttpForbidden403()
                 return await resp.json()
 
     @staticmethod
@@ -134,3 +136,7 @@ class AsyncRequesterV2(object):
             attempt -= 1
 
         raise raised_exc
+
+
+class HttpForbidden403(Exception):
+    pass
