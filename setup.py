@@ -33,5 +33,6 @@ setup(
     install_requires=[
         'Django>2.0',
         'redis>3.0',
+        'asgiref'
     ]
 )
