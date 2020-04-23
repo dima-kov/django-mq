@@ -3,6 +3,8 @@ import logging
 import signal
 import traceback
 
+from asgiref.sync import sync_to_async
+
 from mq.models import MqError
 from mq.queue.consumers.ready_checker import ReadyChecker
 from mq.queue.exceptions import TerminatedException, UnhandledMessageTypeException
@@ -132,7 +134,8 @@ class BaseQueueConsumer(object):
 
         return message
 
-    async def error(self, e, message=None, raw_message=None):
+    @sync_to_async
+    def error(self, e, message=None, raw_message=None):
         self.logger.error('Error during processing queue item: \n{}\n'.format(e))
         message_type = message_type_registry.get(message.type) if message else MqError.UNKNOWN
         message_type = message_type.object if message_type else MqError.UNKNOWN
