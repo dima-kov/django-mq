@@ -38,7 +38,7 @@ class ErrorsResolver:
     def push(self, qs, queue_class, message_type_name):
         queue = queue_class()
         messages = qs.values_list('queue_message', flat=True)
-        queue.push_wait(values=list(messages))
+        queue.push_wait(values=list(messages), start=True)
         self.result.succeed(message_type_name, self._reviewed_errors_qs(qs))
 
     def get_unique_message_types(self):
