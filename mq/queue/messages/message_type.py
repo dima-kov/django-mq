@@ -1,7 +1,4 @@
-from django.db import ProgrammingError
-from django.utils import timezone
-
-from mq.models import MqMessageType
+from mq.queue import mq_datetime
 from mq.queue.messages.messages import CONTENT_NAME, OBJECT_ID_NAME, Message
 
 
@@ -9,15 +6,11 @@ class MessageType(object):
 
     def __init__(self, name):
         self.name = name
-        try:
-            self.object, _ = MqMessageType.objects.get_or_create(name=name)
-        except ProgrammingError:
-            print('MqMessageType is migrated yet')
-            pass
+        self.object = create_type_obj(self.name)
 
     def create(self, content, object_id=None, encode: bool = True):
         """Create a message of this type"""
-        message = Message(content, self.name, timezone.now(), object_id)
+        message = Message(content, self.name, mq_datetime.now(), object_id)
         return message.encode() if encode else message
 
     def bulk_create(self, data, encode=True):
@@ -53,6 +46,20 @@ class MessageType(object):
     @classmethod
     def registry(cls, message_type, queue=None):
         return message_type_registry.register(message_type, queue=queue)
+
+
+def create_type_obj(name):
+    try:
+        from django.db import ProgrammingError
+        from mq.models import MqMessageType
+        obj, _ = MqMessageType.objects.get_or_create(name=name)
+        return obj
+    except ImportError:
+        # no django is installed
+        pass
+    except ProgrammingError:
+        print('MqMessageType is migrated yet')
+        pass
 
 
 from mq.queue.messages.message_type_registry import MessageTypeRegistry
