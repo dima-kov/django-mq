@@ -5,7 +5,6 @@ try:
     DJANGO_INSTALLED = True
 except ImportError:
     DJANGO_INSTALLED = False
-    pass
 
 
 def settings_factory(name, default=None):
