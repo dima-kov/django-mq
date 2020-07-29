@@ -24,9 +24,9 @@ def settings_env(name, default=None):
     return os.environ.get(name, default)
 
 
-MQ_REDIS_HOST = settings_factory('MQ_REDIS_HOST')
+MQ_REDIS_HOST = settings_factory('MQ_REDIS_HOST', 'localhost')
 
-MQ_REDIS_PORT = settings_factory('MQ_REDIS_PORT')
+MQ_REDIS_PORT = settings_factory('MQ_REDIS_PORT', '6379')
 
 MQ_LOGGING_HANDLERS = settings_factory('MQ_LOGGING_HANDLERS')
 
