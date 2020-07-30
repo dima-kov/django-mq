@@ -1,6 +1,0 @@
-=====
-Mq
-=====
-
-Mocada queue
-

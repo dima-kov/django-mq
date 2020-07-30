@@ -1,14 +1,38 @@
-from django.conf import settings
+import os
 
-MQ_REDIS_HOST = getattr(settings, 'MQ_REDIS_HOST', None)
+try:
+    import django
+    DJANGO_INSTALLED = True
+except ImportError:
+    DJANGO_INSTALLED = False
 
-MQ_REDIS_PORT = getattr(settings, 'MQ_REDIS_PORT', None)
 
-MQ_LOGGING_HANDLERS = getattr(settings, 'MQ_LOGGING_HANDLERS', None)
+def settings_factory(name, default=None):
+    if DJANGO_INSTALLED is True:
+        return settings_django(name, default)
+    else:
+        return settings_env(name, default)
 
-MQ_LOGS_DIRECTORY = getattr(settings, 'MQ_LOGS_DIRECTORY', None)
 
-MQ_LOGGING = getattr(settings, 'MQ_LOGGING', {})
+def settings_django(name, default=None):
+    from django.conf import settings
+
+    return getattr(settings, name, default)
+
+
+def settings_env(name, default=None):
+    return os.environ.get(name, default)
+
+
+MQ_REDIS_HOST = settings_factory('MQ_REDIS_HOST', 'localhost')
+
+MQ_REDIS_PORT = settings_factory('MQ_REDIS_PORT', '6379')
+
+MQ_LOGGING_HANDLERS = settings_factory('MQ_LOGGING_HANDLERS')
+
+MQ_LOGS_DIRECTORY = settings_factory('MQ_LOGS_DIRECTORY')
+
+MQ_LOGGING = settings_factory('MQ_LOGGING', {})
 
 # Period in days after which resolved errors will be deleted
-MQ_FLUSH_ERRORS_DAYS = getattr(settings, 'MQ_FLUSH_ERRORS_DAYS', None)
+MQ_FLUSH_ERRORS_DAYS = settings_factory('MQ_FLUSH_ERRORS_DAYS')

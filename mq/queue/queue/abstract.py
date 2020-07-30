@@ -1,11 +1,7 @@
 import math
 
-from django.contrib.auth import get_user_model
-
 from mq.queue.queue.consumer_registry import ConsumerRegistry
 from mq.queue.storage import AbstractStorageConnector
-
-User = get_user_model()
 
 
 class AbstractQueue(object):
@@ -187,7 +183,7 @@ class PerUserQueueMixin(Queue):
         return method(self._user_list_name(user_id), *values)
 
     def gather(self):
-        users_id = User.objects.all().values_list('id', flat=True)
+        users_id = self._get_user_ids()
         per_user, summed = self._count_per_user(users_id)
 
         # Refuse if number elements in queue is bigger than gathering size
@@ -222,9 +218,14 @@ class PerUserQueueMixin(Queue):
 
     def cleanup(self):
         super().cleanup()
-        users_id = User.objects.all().values_list('id', flat=True)
+        users_id = self._get_user_ids()
         for user_id in users_id:
             self.connector.delete_key(self._user_list_name(user_id))
+
+    def _get_user_ids(self, **kwargs):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        return User.objects.filter(**kwargs).values_list('id', flat=True)
 
     def _ltrim_per_user(self, user_id, number=-1):
         return self.connector.ltrim(self._user_list_name(user_id), number)
