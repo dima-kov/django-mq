@@ -58,7 +58,6 @@ def create_type_obj(name):
         # no django is installed
         pass
     except ProgrammingError:
-        print('MqMessageType is migrated yet')
         pass
 
 
