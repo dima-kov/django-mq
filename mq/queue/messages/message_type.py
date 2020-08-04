@@ -10,7 +10,7 @@ class MessageType(object):
 
     def create(self, content, object_id=None, encode: bool = True):
         """Create a message of this type"""
-        message = Message(content, self.name, mq_datetime.now(), object_id)
+        message = Message(content, self.name, mq_datetime.now().time(), object_id)
         return message.encode() if encode else message
 
     def bulk_create(self, data, encode=True):

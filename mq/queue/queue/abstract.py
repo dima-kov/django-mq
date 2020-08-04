@@ -1,5 +1,7 @@
 import math
+import time
 
+from mq.queue.messages.messages import MessageDecoder
 from mq.queue.queue.consumer_registry import ConsumerRegistry
 from mq.queue.storage import AbstractStorageConnector
 
@@ -14,6 +16,7 @@ class AbstractQueue(object):
     capacity = None
     consumers: ConsumerRegistry = None
     handled_types: tuple = None
+    max_in_queue_interval = 60 * 60  # in sec
 
     def __init__(self):
         list_name = 'queue_{}_{{stage}}'.format(self.name)
@@ -37,6 +40,15 @@ class AbstractQueue(object):
         """
         Pushes all values from processing into wait list
         """
+        raise NotImplementedError()
+
+    def processing_obsolete_to_wait(self):
+        """
+        Method pushes all obsolete queue messages from processing to wait
+
+        Message is considered obsolete when pushed_at is more than MAX_IN_QUEUE_INTERVAL
+        """
+
         raise NotImplementedError()
 
     def processing_delete(self, value):
@@ -113,6 +125,20 @@ class Queue(AbstractQueue):
         if len(to_wait) > 0:
             self.push_wait(to_wait, start=True)
             self.del_processing()
+
+    def processing_obsolete_to_wait(self):
+        to_wait = self.get_processing()
+        now = time.time()
+        for raw_message in to_wait:
+            message = MessageDecoder(raw_message).decoded()
+            if not message.in_process_at:
+                continue
+
+            interval = now - message.in_process_at
+            if interval > self.max_in_queue_interval:
+                self.processing_delete(message)
+                # todo: pop push with new in process at
+                self.pop_wait_push_processing()
 
     def processing_delete(self, value):
         self.connector.delete_list_value(self.processing, value)
