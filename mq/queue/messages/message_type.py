@@ -62,6 +62,6 @@ def create_type_obj(name):
         pass
 
 
-from mq.queue.messages.message_type_registry import MessageTypeRegistry
+from mq.queue.messages.message_type_registry import MessageTypeRegistry  # noqa
 
 message_type_registry = MessageTypeRegistry()

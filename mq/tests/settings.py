@@ -69,7 +69,7 @@ MQ_LOGGING_LOGGERS = [COORDINATES_LOGGER]
 
 MQ_LOGGING_DIRECTORY = '/Users/dima/projects/moze/logs'
 
-from mq.logging import configure_logging
+from mq.logging import configure_logging  # noqa
 
 configure_logging(LOGGING, MQ_LOGGING_LOGGERS, MQ_LOGGING_DIRECTORY)
 
