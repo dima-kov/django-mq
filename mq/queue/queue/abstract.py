@@ -119,7 +119,7 @@ class Queue(AbstractQueue):
     def push_processing(self, *values):
         return self.connector.push_list(self.processing, *values)
 
-    def pop_wait_push_processing(self) -> [None, Message]:
+    def pop_wait_push_processing(self) -> [None, str]:
         wait_raw_message = self.connector.rpop(self.wait)
         if wait_raw_message is None:
             return
