@@ -1,6 +1,5 @@
 import json
-
-from mq.queue import mq_datetime
+import time
 
 TYPE_NAME = "type"
 CONTENT_NAME = "content"
@@ -27,8 +26,8 @@ class Message(object):
             PUSHED_AT_NAME: self.pushed_at,
         }, default=str)
 
-    def set_in_process_at(self, time=None):
-        self.in_process_at = time or mq_datetime.now().time()
+    def set_in_process_at(self, t=None):
+        self.in_process_at = t or time.time()
 
 
 class MessageDecoder(object):
@@ -45,17 +44,17 @@ class MessageDecoder(object):
         return Message(
             message_type=json_message[TYPE_NAME],
             content=json_message[CONTENT_NAME],
-            pushed_at=self._as_time(json_message[PUSHED_AT_NAME]),
-            in_process_at=self._as_time(json_message[IN_PROCESS_AT_NAME]),
+            pushed_at=self._as_timestamp(json_message[PUSHED_AT_NAME]),
+            in_process_at=self._as_timestamp(json_message[IN_PROCESS_AT_NAME]),
             object_id=json_message[OBJECT_ID_NAME]
         )
 
     @staticmethod
-    def _as_time(raw_time: [int, float, str]):
+    def _as_timestamp(raw_time: [int, float, str]):
         """
         Raw time is considered to be a int or float or numeric str representing epoch
         """
         try:
             return int(raw_time)
-        except ValueError:
+        except (ValueError, TypeError):
             return

@@ -24,6 +24,9 @@ class AbstractStorageConnector:
     def rpoplpush(self, src, dst):
         raise NotImplementedError
 
+    def rpop(self, src):
+        raise NotImplementedError
+
     def list_range(self, key, number=-1):
         raise NotImplementedError
 

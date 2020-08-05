@@ -5,7 +5,7 @@ from mq.queue.storage.abstract import AbstractStorageConnector
 
 
 class RedisStorageConnector(AbstractStorageConnector):
-    redis = redis.Redis(host=settings.MQ_REDIS_HOST, port=settings.MQ_REDIS_PORT)
+    _redis = redis.Redis(host=settings.MQ_REDIS_HOST, port=settings.MQ_REDIS_PORT)
 
     def decode(self, data):
         """Decoding from byte into string after redis storage"""
@@ -41,6 +41,9 @@ class RedisStorageConnector(AbstractStorageConnector):
 
     def rpoplpush(self, src, dst):
         return self.redis.rpoplpush(src, dst)
+
+    def rpop(self, src):
+        return self.redis.rpop(src)
 
     def list_range(self, key, number=-1):
         return self.redis.lrange(key, 0, number)
@@ -84,3 +87,7 @@ class RedisStorageConnector(AbstractStorageConnector):
 
     def expire(self, key, ttl=0):
         return self.redis.expire(key, ttl)
+
+    @property
+    def redis(self):
+        return self._redis

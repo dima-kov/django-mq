@@ -1,7 +1,7 @@
 import math
 import time
 
-from mq.queue.messages.messages import MessageDecoder
+from mq.queue.messages.messages import MessageDecoder, Message
 from mq.queue.queue.consumer_registry import ConsumerRegistry
 from mq.queue.storage import AbstractStorageConnector
 
@@ -116,9 +116,19 @@ class Queue(AbstractQueue):
         method = self.connector.push_list_start if start else self.connector.push_list
         return method(self.wait, *values)
 
-    def pop_wait_push_processing(self):
-        result = self.connector.rpoplpush(self.wait, self.processing)
-        return result.decode('utf-8') if result else None
+    def push_processing(self, *values):
+        return self.connector.push_list(self.processing, *values)
+
+    def pop_wait_push_processing(self) -> [None, Message]:
+        wait_raw_message = self.connector.rpop(self.wait)
+        if wait_raw_message is None:
+            return
+
+        message = MessageDecoder(wait_raw_message.decode('utf-8')).decoded()
+        message.set_in_process_at()
+        encoded = message.encode()
+        self.push_processing(encoded)
+        return encoded
 
     def processing_to_wait(self):
         to_wait = self.get_processing()
@@ -135,10 +145,10 @@ class Queue(AbstractQueue):
                 continue
 
             interval = now - message.in_process_at
+            message_encoded = message.encode()
             if interval > self.max_in_queue_interval:
-                self.processing_delete(message)
-                # todo: pop push with new in process at
-                self.pop_wait_push_processing()
+                self.processing_delete(raw_message)
+                self.push_wait(message_encoded, start=True)
 
     def processing_delete(self, value):
         self.connector.delete_list_value(self.processing, value)
