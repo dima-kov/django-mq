@@ -11,7 +11,13 @@ class MessageType(object):
 
     def create(self, content, object_id=None, encode: bool = True):
         """Create a message of this type"""
-        message = Message(content, self.name, time.time(), object_id)
+        message = Message(
+            content=content,
+            message_type=self.name,
+            pushed_at=time.time(),
+            in_process_at=None,
+            object_id=object_id,
+        )
         return message.encode() if encode else message
 
     def bulk_create(self, data, encode=True):
