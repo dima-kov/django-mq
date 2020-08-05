@@ -1,7 +1,8 @@
 import os
 
 try:
-    import django
+    import django  # noqa
+
     DJANGO_INSTALLED = True
 except ImportError:
     DJANGO_INSTALLED = False

@@ -1,7 +1,7 @@
 import math
 import time
 
-from mq.queue.messages.messages import MessageDecoder, Message
+from mq.queue.messages.messages import MessageDecoder
 from mq.queue.queue.consumer_registry import ConsumerRegistry
 from mq.queue.storage import AbstractStorageConnector
 
