@@ -15,8 +15,8 @@ class TestMessageType(TestCase):
         assert message_1_1.type == self.TYPE_1
 
         message_1_2 = self.message_type_1.create(2)
-        message_1_2_expected = '{"content": 2, "object_id": null, "type": "hello", "pushed_at"'
-        assert message_1_2.startswith(message_1_2_expected) == True
+        message_1_2_expected = '{"content": 2, "object_id": null, "type": "hello",'
+        self.assertTrue(message_1_2.startswith(message_1_2_expected))
 
     def test_bulk_create(self):
         data = [
@@ -55,8 +55,8 @@ class TestMessageType(TestCase):
             {'content': 3, },
         ]
 
-        message_1_expected = '{"content": 1, "object_id": null, "type": "hello", "pushed_at"'
+        message_1_expected = '{"content": 1, "object_id": null, "type": "hello", '
 
         messages_1_1 = self.message_type_1.bulk_create(data, encode=True)
         assert len(messages_1_1) == 3
-        assert messages_1_1[0].startswith(message_1_expected) is True
+        self.assertTrue(messages_1_1[0].startswith(message_1_expected))

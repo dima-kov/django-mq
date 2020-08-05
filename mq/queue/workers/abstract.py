@@ -22,7 +22,7 @@ class AbstractWorker:
         self.to_previous_queue = []
 
     async def process(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     @classmethod
     def is_ready(cls, cid):

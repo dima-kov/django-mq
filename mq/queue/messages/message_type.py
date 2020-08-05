@@ -1,4 +1,5 @@
-from mq.queue import mq_datetime
+import time
+
 from mq.queue.messages.messages import CONTENT_NAME, OBJECT_ID_NAME, Message
 
 
@@ -10,7 +11,7 @@ class MessageType(object):
 
     def create(self, content, object_id=None, encode: bool = True):
         """Create a message of this type"""
-        message = Message(content, self.name, mq_datetime.now(), object_id)
+        message = Message(content, self.name, time.time(), object_id)
         return message.encode() if encode else message
 
     def bulk_create(self, data, encode=True):
