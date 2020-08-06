@@ -57,30 +57,23 @@ class BaseQueuesFacade(object):
     Instance of BaseQueuesFacade can be stored as
     """
 
-    def queue_by_type(self, message_type: str) -> AbstractQueue:
-        for queue in self.queues:
-            if message_type in queue.handled_types:
-                return queue
-
-        raise ValueError("No queue were found for type: {}".format(message_type))
-
     def cleanup_queues(self):
-        for queue in self.queues:
+        for queue in self.all:
             queue.cleanup()
 
     @property
-    def queues(self):
+    def all(self):
+        return [value for _, value in self.all_dict.items()]
+
+    @property
+    def all_dict(self):
         class_attrs = vars(self.__class__).items()
         return {name: value for name, value in class_attrs if isinstance(value, AbstractQueue)}
 
     @property
-    def queues_list(self):
-        return [value for _, value in self.queues]
+    def per_user(self):
+        return [value for _, value in self.per_user_dict.items()]
 
     @property
-    def per_user_queues(self):
-        return {name: value for name, value in self.queues.items() if isinstance(value, PerUserQueueMixin)}
-
-    @property
-    def per_user_queues_list(self):
-        return [value for _, value in self.per_user_queues.items()]
+    def per_user_dict(self):
+        return {name: value for name, value in self.all_dict.items() if isinstance(value, PerUserQueueMixin)}
