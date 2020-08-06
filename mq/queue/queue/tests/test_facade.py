@@ -15,8 +15,8 @@ class FacadeTestCase(TestCase):
         cls.facade = FacadeForTest()
 
     def test(self):
-        queues = self.facade._queues
+        queues = self.facade.queues
         self.assertEqual(len(queues), 1)
 
-        per_user_queues = self.facade._per_user_queues
+        per_user_queues = self.facade.per_user_queues
         self.assertEqual(len(per_user_queues), 0)

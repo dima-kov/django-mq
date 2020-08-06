@@ -58,21 +58,29 @@ class BaseQueuesFacade(object):
     """
 
     def queue_by_type(self, message_type: str) -> AbstractQueue:
-        for queue in self._queues:
+        for queue in self.queues:
             if message_type in queue.handled_types:
                 return queue
 
         raise ValueError("No queue were found for type: {}".format(message_type))
 
     def cleanup_queues(self):
-        for queue in self._queues:
+        for queue in self.queues:
             queue.cleanup()
 
     @property
-    def _queues(self):
+    def queues(self):
         class_attrs = vars(self.__class__).items()
         return {name: value for name, value in class_attrs if isinstance(value, AbstractQueue)}
 
     @property
-    def _per_user_queues(self):
-        return {name: value for name, value in self._queues.items() if isinstance(value, PerUserQueueMixin)}
+    def queues_list(self):
+        return [value for _, value in self.queues]
+
+    @property
+    def per_user_queues(self):
+        return {name: value for name, value in self.queues.items() if isinstance(value, PerUserQueueMixin)}
+
+    @property
+    def per_user_queues_list(self):
+        return [value for _, value in self.per_user_queues.items()]
