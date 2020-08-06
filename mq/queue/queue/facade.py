@@ -1,4 +1,4 @@
-from mq.queue.queue.abstract import AbstractQueue
+from mq.queue.queue.abstract import AbstractQueue, PerUserQueueMixin
 
 
 class BaseQueueFacade(object):
@@ -56,16 +56,23 @@ class BaseQueuesFacade(object):
 
     Instance of BaseQueuesFacade can be stored as
     """
-    __queues__ = ()
 
     def queue_by_type(self, message_type: str) -> AbstractQueue:
-
-        for queue in self.__queues__:
-            if queue is AbstractQueue and message_type in queue.handled_types:
+        for queue in self._queues:
+            if message_type in queue.handled_types:
                 return queue
 
         raise ValueError("No queue were found for type: {}".format(message_type))
 
     def cleanup_queues(self):
-        for queue in self.__queues__:
+        for queue in self._queues:
             queue.cleanup()
+
+    @property
+    def _queues(self):
+        class_attrs = vars(self.__class__).items()
+        return {name: value for name, value in class_attrs if isinstance(value, AbstractQueue)}
+
+    @property
+    def _per_user_queues(self):
+        return {name: value for name, value in self._queues.items() if isinstance(value, PerUserQueueMixin)}
