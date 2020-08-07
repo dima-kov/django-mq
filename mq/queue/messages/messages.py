@@ -44,8 +44,8 @@ class MessageDecoder(object):
         return Message(
             message_type=json_message[TYPE_NAME],
             content=json_message[CONTENT_NAME],
-            pushed_at=self._as_timestamp(json_message[PUSHED_AT_NAME]),
-            in_process_at=self._as_timestamp(json_message[IN_PROCESS_AT_NAME]),
+            pushed_at=self._as_timestamp(json_message.get(PUSHED_AT_NAME)),
+            in_process_at=self._as_timestamp(json_message.get(IN_PROCESS_AT_NAME)),
             object_id=json_message[OBJECT_ID_NAME]
         )
 
