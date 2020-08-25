@@ -59,3 +59,12 @@ class AbstractStorageConnector:
 
     def ltrim(self, dest, number):
         raise NotImplementedError
+
+    def set_add(self, set_name: str, *set_members):
+        raise NotImplementedError
+
+    def set_remove(self, set_name: str, *set_members):
+        raise NotImplementedError
+
+    def set_members(self, set_name: str):
+        raise NotImplementedError

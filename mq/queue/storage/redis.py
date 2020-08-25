@@ -75,6 +75,15 @@ class RedisStorageConnector(AbstractStorageConnector):
     def ltrim(self, name, number):
         return self.redis.ltrim(name, number, -1)
 
+    def set_add(self, set_name: str, *set_members):
+        return self.redis.sadd(set_name, *set_members)
+
+    def set_remove(self, set_name: str, *set_members):
+        return self.redis.srem(set_name, *set_members)
+
+    def set_members(self, set_name: str):
+        return self.redis.smembers(set_name)
+
     @staticmethod
     def as_int(v):
         return 0 if v is None else int(v)
