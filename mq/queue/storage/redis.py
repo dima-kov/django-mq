@@ -15,6 +15,8 @@ class RedisStorageConnector(AbstractStorageConnector):
             return dict(map(self.decode, data.items()))
         if isinstance(data, tuple):
             return map(self.decode, data)
+        if isinstance(data, set):
+            return map(self.decode, data)
 
         return data
 
@@ -82,7 +84,7 @@ class RedisStorageConnector(AbstractStorageConnector):
         return self.redis.srem(set_name, *set_members)
 
     def set_members(self, set_name: str):
-        return self.redis.smembers(set_name)
+        return self.decode(self.redis.smembers(set_name))
 
     @staticmethod
     def as_int(v):
