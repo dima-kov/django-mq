@@ -5,7 +5,11 @@ from mq.queue.storage.abstract import AbstractStorageConnector
 
 
 class RedisStorageConnector(AbstractStorageConnector):
-    _redis = redis.Redis(host=settings.MQ_REDIS_HOST, port=settings.MQ_REDIS_PORT)
+    _redis = redis.Redis(
+        host=settings.MQ_REDIS_HOST,
+        port=settings.MQ_REDIS_PORT,
+        password=settings.MQ_REDIS_PASSWORD,
+    )
 
     def decode(self, data):
         """Decoding from byte into string after redis storage"""

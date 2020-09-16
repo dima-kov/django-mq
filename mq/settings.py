@@ -29,6 +29,8 @@ MQ_REDIS_HOST = settings_factory('MQ_REDIS_HOST', 'localhost')
 
 MQ_REDIS_PORT = settings_factory('MQ_REDIS_PORT', '6379')
 
+MQ_REDIS_PASSWORD = settings_factory('MQ_REDIS_PASSWORD', None)
+
 MQ_LOGGING_HANDLERS = settings_factory('MQ_LOGGING_HANDLERS')
 
 MQ_LOGS_DIRECTORY = settings_factory('MQ_LOGS_DIRECTORY')
