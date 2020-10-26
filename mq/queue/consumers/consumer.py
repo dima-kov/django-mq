@@ -107,9 +107,7 @@ class BaseQueueConsumer(object):
             await worker.process()
 
         except Exception as e:
-            await self.error(e, message, raw_message)
-            if worker:
-                worker.error()
+            await self.error(e, message, raw_message, worker)
         finally:
             self.queue.processing_delete(raw_message)
             if worker:
@@ -135,7 +133,7 @@ class BaseQueueConsumer(object):
         return message
 
     @sync_to_async
-    def error(self, e, message=None, raw_message=None):
+    def error(self, e, message=None, raw_message=None, worker=None):
         self.logger.error('Error during processing queue item: \n{}\n'.format(e))
         message_type = message_type_registry.get(message.type) if message else MqError.UNKNOWN
         message_type = message_type.object if message_type else MqError.UNKNOWN
@@ -143,6 +141,8 @@ class BaseQueueConsumer(object):
             queue_message=raw_message, error_message=traceback.format_exc(),
             message_type=message_type, status=MqError.CREATED,
         )
+        if worker:
+            worker.error()
 
     def to_queue(self, worker: AbstractWorker):
         self.logger.info("Back to queue from worker. Messages: {}".format(worker.to_queue))
