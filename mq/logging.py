@@ -17,8 +17,8 @@ def configure_logging(LOGGING: dict, MQ_LOGGING_LOGGERS: list, MQ_LOGGING_DIRECT
     formatters.update(FORMATTERS)
     LOGGING['formatters'] = formatters
 
-    LOGGING['handlers'] = {}
-    LOGGING['loggers'] = {}
+    LOGGING['handlers'] = LOGGING.get('handlers', {})
+    LOGGING['loggers'] = LOGGING.get('loggers', {})
 
     if not os.path.exists(MQ_LOGGING_DIRECTORY):
         os.makedirs(MQ_LOGGING_DIRECTORY)
