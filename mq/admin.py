@@ -1,4 +1,6 @@
 from django.contrib import admin, messages
+from django.template.response import TemplateResponse
+from django.urls import path
 from django.utils.translation import gettext as _
 
 from mq.models import MqError, MqMessageType
@@ -35,6 +37,23 @@ admin.site.register(MqError, MqErrorAdmin)
 class MqMessageTypeAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+
+    def get_urls(self):
+        urls = super().get_urls()
+
+        prepend_urls = [
+            path('stats/', self.admin_site.admin_view(self.mq_stats_view))
+        ]
+
+        return prepend_urls + urls
+
+    def mq_stats_view(self, request):
+        from mq import service
+        context = dict(
+            self.admin_site.each_context(request),
+            stats=service.get_queues_stats(),
+        )
+        return TemplateResponse(request, "mq/admin/stats.html", context)
 
 
 admin.site.register(MqMessageType, MqMessageTypeAdmin)
