@@ -1,2 +1,2 @@
 include README.md
-include mq/templates/*
+recursive-include mq/templates *
