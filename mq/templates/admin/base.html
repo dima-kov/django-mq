@@ -1,0 +1,17 @@
+{% extends 'admin/base.html' %}
+
+{% load i18n %}
+{% load mq %}
+
+{% block userlinks %}
+    {% mq_errors as mq_errors %}
+    <a href="{% url 'admin:mq_mqerror_changelist' %}" class="{% if mq_errors > 0 %}deletelink{% endif %}">
+        {% trans 'Errors' %}: {{ mq_errors }}
+    </a>/
+
+    <a href="{% url 'admin:mq_stats' %}">
+        {% trans 'Stats' %}
+    </a>/
+
+    {{ block.super }}
+{% endblock %}

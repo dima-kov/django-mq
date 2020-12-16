@@ -1,3 +1,5 @@
+default_add_config = 'mq.apps.MqAppConfig'
+
 try:
     import django  # noqa
     from mq.checks import *  # noqa

@@ -1,0 +1,39 @@
+{% extends "admin/index.html" %}
+
+{% load i18n %}
+
+{% block content %}
+    <table id="mq-stats">
+        <tr>
+            <td>{% trans 'Name' %}</td>
+            <td>{% trans 'In Queue' %}</td>
+            <td>{% trans 'In Process' %}</td>
+        </tr>
+        {% for queue, stats in stats.items %}
+            <tr>
+                <td>
+                    <span>{{ queue }}</span>
+                </td>
+                <td>
+                    <span>
+                        {% if stats.wait > 0 %}
+                            <strong><u>{{ stats.wait }}</u></strong>
+                        {% else %}
+                            {{ stats.wait }}
+                        {% endif %}
+                    </span>
+                </td>
+                <td>
+                    {% if stats.processing > 0 %}
+                        <strong><u>{{ stats.processing }}</u></strong>
+                    {% else %}
+                        {{ stats.processing }}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+
+    </table>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

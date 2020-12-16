@@ -39,3 +39,5 @@ MQ_LOGGING = settings_factory('MQ_LOGGING', {})
 
 # Period in days after which resolved errors will be deleted
 MQ_FLUSH_ERRORS_DAYS = settings_factory('MQ_FLUSH_ERRORS_DAYS')
+
+MQ_QUEUES_FACADE_CLASS = settings_factory('MQ_QUEUES_FACADE_CLASS', 'mq.queue.queue.BaseQueuesFacade')
