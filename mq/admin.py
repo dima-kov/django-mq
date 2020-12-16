@@ -42,7 +42,7 @@ class MqMessageTypeAdmin(admin.ModelAdmin):
         urls = super().get_urls()
 
         prepend_urls = [
-            path('stats/', self.admin_site.admin_view(self.mq_stats_view))
+            path('stats/', self.admin_site.admin_view(self.mq_stats_view), name='mq_stats')
         ]
 
         return prepend_urls + urls
