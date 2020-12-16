@@ -52,6 +52,7 @@ class MqMessageTypeAdmin(admin.ModelAdmin):
         context = dict(
             self.admin_site.each_context(request),
             stats=service.get_queues_stats(),
+            title=_('Mq stats')
         )
         return TemplateResponse(request, "mq/admin/stats.html", context)
 
