@@ -2,11 +2,8 @@
 
 ## Installation
 
-Install is possible either with SSH access to github account with read permission to repository:
-  `pip install git+ssh://git@github.com/feodal-online/django-mq.git@master`
-
-or with Github access token:
-  `pip_install_privates --token {GITHUB_TOKEN} git+ssh://git@github.com/feodal-online/django-mq.git@master`
+Install:
+  `pip install git+ssh://git@github.com/dima-kov/django-mq.git@master`
 
 ## Setup:
 
